@@ -1,0 +1,16 @@
+=== Run 4 | 2026-09-27 (Radar-Initialupdate, Buch-Rücksprung, Sprite-Bounds) ===
+--- node verifier/v1/test_game.mjs
+exit=0
+ALLE TESTS BESTANDEN
+--- node verifier/v1/check_assets.mjs
+exit=0
+ALLE CHECKS BESTANDEN
+--- Screenshots: v1b_{home,radar,catch,buch,tracks}.png erstellt
+
+--- Visuelle Sichtprüfung (v1b-Screenshots), manuell:
+home:    OK — Maskottchen, 3 farbige Karten, Sammel-Chip
+radar:   OK — Distanz „30 m", Pfeil rotiert, 6 Punkte rot, Skala „Eiskalt", Buttons vorhanden
+catch:   OK — Sprite (Kuchen) klein & innerhalb der Linsen-Zone, Mini-Thermo rechts, Blitz/Foto-Buttons
+buch:    OK — Grid, gesperrte Zellen mit „?", gezählte Items (×2-Badge), Sterne je Seltenheit
+tracks:  OK — 4 Spur-Karten, erste Karte voll sichtbar
+F5 (helleres Overlay): box-shadow rgba(8,18,34,.5) ≤ 0.55 ✓, Linsen min(46vw,340px) ≥ 44vw ✓

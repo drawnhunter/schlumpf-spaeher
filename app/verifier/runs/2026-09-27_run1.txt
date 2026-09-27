@@ -1,0 +1,9 @@
+=== Run 1 | 2026-09-27 ===
+--- node --check game.js
+exit=0
+--- node --check app.js
+exit=0
+--- node verifier/v1/test_game.mjs
+exit=1
+--- node verifier/v1/check_assets.mjs
+exit=1

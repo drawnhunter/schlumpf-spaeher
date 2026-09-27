@@ -1,0 +1,36 @@
+=== Run 6 | 2026-09-28 (Credit-Formel: max(toward, 35%)) ===
+--- node verifier/v2/test_game_v2.mjs
+== v2: kurze Distanzen ==
+  PASS  rng=0 -> Distanz 10 m (untere Grenze)
+  PASS  rng~1 -> Distanz <= 25 m
+  PASS  rng=0.5 -> Distanz 17.5 m (erwarte ~17.5, ist 17.5)
+  PASS  explizite Grenzen weiterhin möglich (v1-Kompatibilität)
+== v2: huntProgress (Credit-Modell) ==
+  PASS  10 m in Zielrichtung -> Fortschritt ~0.5 (erwarte ~0.5, ist 0.499999999997305)
+  PASS  10 m in Zielrichtung -> Rest ~10 m (erwarte ~10, ist 10.000000000053898)
+  PASS  20 m in Zielrichtung -> Fortschritt ~1 (Freigabe-Nähe) (erwarte ~1, ist 0.9999999999156011)
+  PASS  10 m falsch herum -> 35 % Credit (~0.175) (erwarte ~0.175, ist 0.17500000001288324)
+  PASS  10 m orthogonal -> Teilkredit (~0.175)
+  PASS  Stehenbleiben (<0.5 m) -> kein Fortschritt
+  PASS  walked wird korrekt zurückgegeben
+== v2: Gnadenregel / Freigabe ==
+  PASS  80 % Fortschritt -> sofort frei
+  PASS  79 % ohne Zeit -> nicht frei
+  PASS  Gnadenregel ab 40 s
+  PASS  unter 40 s nicht frei
+  PASS  MERCY_MS = 40 s
+== v2: Regressionen (Kernfunktionen unverändert) ==
+  PASS  Haversine/destinationPoint stabil (erwarte ~100, ist 100.00000000104117)
+  PASS  Peilung Osten stabil (erwarte ~0, ist 8.105871529551223e-10)
+  PASS  dotsOf unverändert
+  PASS  weiterhin 10 Sammelobjekte
+
+ALLE V2-TESTS BESTANDEN
+exit=0
+--- node verifier/v1/check_assets.mjs
+exit=0
+ALLE CHECKS BESTANDEN
+--- v1-Suite (Referenz, newHunt-Grenzen-Test überholt):
+exit=1
+  FAIL  newHunt rng=0 -> untere Grenze
+1 TEST(S) FEHLGESCHLAGEN

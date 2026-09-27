@@ -1,0 +1,12 @@
+=== Run 10 | 2026-09-28 (v5: Sprachfuehrung + Backend/Konten) ===
+--- node verifier/v5/test_game_v5.mjs
+exit=0 (ALLE V5-TESTS BESTANDEN)
+--- node verifier/v5/test_backend.mjs (Server in /tmp/srv via NODE_PATH)
+exit=0 (ALLE BACKEND-TESTS BESTANDEN)
+--- node verifier/v4/test_game_v4.mjs
+exit=0 (ALLE V4-TESTS BESTANDEN)
+--- node verifier/v3/test_game_v3.mjs
+exit=0 (ALLE V3-TESTS BESTANDEN)
+--- node verifier/v1/check_assets.mjs
+exit=0 (ALLE CHECKS BESTANDEN)
+--- Screenshots v5: radar_guide (Maskottchen+Blase+Sprach-Toggle), konto — manuell OK; nav-title Wrap gefixt (v5b)

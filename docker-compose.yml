@@ -1,0 +1,12 @@
+services:
+  schlumpf-spaeher:
+    build: .
+    image: schlumpf-spaeher:1.0.0
+    container_name: schlumpf-spaeher
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+    ports:
+      - "4178:4178"
+    volumes:
+      - ./data:/data

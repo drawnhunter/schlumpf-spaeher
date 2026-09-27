@@ -1,0 +1,104 @@
+=== Run 3 | 2026-09-27 (pickItem klassengewichtet, Winkel-Toleranz, Item-Bilder-Check) ===
+--- node verifier/v1/test_game.mjs
+== Navigation ==
+  PASS  destinationPoint Nord 100 m -> Distanz ~100 m (erwarte ~100, ist 100.00000000104117)
+  PASS  Peilung zum Punkt im Norden ~0° (erwarte ~0, ist 359.9999999989671)
+  PASS  Peilung zum Punkt im Osten ~90° (erwarte ~90, ist 89.9999999995947)
+  PASS  Peilung zum Punkt im Westen ~270° (erwarte ~270, ist 270.0000000004053)
+  PASS  Distanz gleicher Punkt = 0 (erwarte ~0, ist 0)
+  PASS  Haversine 1° Breite ~111 km
+== newHunt / Zufall ==
+  PASS  newHunt bearing mit rng=0.5 -> 180° (erwarte ~180, ist 180)
+  PASS  newHunt Distanz mit rng=0.5 -> 35 m (erwarte ~35, ist 35)
+  PASS  newHunt rng=0 -> untere Grenze
+  PASS  newHunt rng~1 -> obere Grenze
+== Kompass ==
+  PASS  Android alpha=30 -> Heading 330 (erwarte ~330, ist 330)
+  PASS  iOS webkitCompassHeading=90 (erwarte ~90, ist 90)
+  PASS  leeres Event -> null
+  PASS  normDelta(190) = -170 (erwarte ~-170, ist -170)
+  PASS  normDelta(-190) = 170 (erwarte ~170, ist 170)
+  PASS  Glättung über 0°-Sprung (350->10) ~0 (erwarte ~0, ist 0)
+== Fortschritt / Punkte / Skala ==
+  PASS  progressOf Start = 0 (erwarte ~0, ist 0)
+  PASS  progressOf am Ziel = 1 (erwarte ~1, ist 1)
+  PASS  progressOf halb = 0.5 (erwarte ~0.5, ist 0.5)
+  PASS  progressOf clamp oben (erwarte ~1, ist 1)
+  PASS  dotsOf(0) alle rot
+  PASS  dotsOf(1) alle grün
+  PASS  dotsOf(0.5) halb grün
+  PASS  Skala 0.0 = Eiskalt
+  PASS  Skala 0.3 = Kalt
+  PASS  Skala 0.5 = Lauwarm
+  PASS  Skala 0.7 = Warm
+  PASS  Skala 0.9 = Heiß
+  PASS  Skala 1.0 = GLÜHEND
+  PASS  Piep-Intervall nimmt mit Nähe ab
+  PASS  Piep-Intervall Mindestgrenze
+  PASS  Piep-Intervall Höchstgrenze
+  PASS  catchReady Schwelle 10 m
+== Sammelobjekte ==
+  PASS  genau 10 Sammelobjekte definiert
+  PASS  Item-IDs eindeutig
+  PASS  Item schlumpf vollständig
+  PASS  Item sternenstab vollständig
+  PASS  Item schlumpfhaus vollständig
+  PASS  Item glitzerpilz vollständig
+  PASS  Item goldnuss vollständig
+  PASS  Item pilze vollständig
+  PASS  Item geraet vollständig
+  PASS  Item fernglas vollständig
+  PASS  Item falle vollständig
+  PASS  Item kuchen vollständig
+  PASS  Ausweich-Anzahl = rarity-1 (häufig 0, selten 1, legendär 2)
+  PASS  Verteilung häufig ~60 % (erwarte ~0.6, ist 0.60355)
+  PASS  Verteilung selten ~28 % (erwarte ~0.28, ist 0.2764)
+  PASS  Verteilung legendär ~12 % (erwarte ~0.12, ist 0.12005)
+
+ALLE TESTS BESTANDEN
+exit=0
+--- node verifier/v1/check_assets.mjs
+== Assets ==
+  PASS  Asset vorhanden: assets/schlumpf.png
+  PASS  Asset vorhanden: assets/geraet.png
+  PASS  Asset vorhanden: assets/schlumpfhaus.png
+  PASS  Asset vorhanden: assets/pilze.png
+  PASS  Asset vorhanden: game.js
+  PASS  Asset vorhanden: app.js
+  PASS  Asset vorhanden: assets/sternenstab.png
+  PASS  Asset vorhanden: assets/glitzerpilz.png
+  PASS  Asset vorhanden: assets/goldnuss.png
+  PASS  Asset vorhanden: assets/fernglas.png
+  PASS  Asset vorhanden: assets/falle.png
+  PASS  Asset vorhanden: assets/kuchen.png
+  PASS  Item-Bild vorhanden: assets/schlumpf.png
+  PASS  Item-Bild vorhanden: assets/sternenstab.png
+  PASS  Item-Bild vorhanden: assets/schlumpfhaus.png
+  PASS  Item-Bild vorhanden: assets/glitzerpilz.png
+  PASS  Item-Bild vorhanden: assets/goldnuss.png
+  PASS  Item-Bild vorhanden: assets/pilze.png
+  PASS  Item-Bild vorhanden: assets/geraet.png
+  PASS  Item-Bild vorhanden: assets/fernglas.png
+  PASS  Item-Bild vorhanden: assets/falle.png
+  PASS  Item-Bild vorhanden: assets/kuchen.png
+== Feature-Marker (HTML/JS) ==
+  PASS  Marker: Radar-View
+  PASS  Marker: Fang-View
+  PASS  Marker: Sammelbuch-View
+  PASS  Marker: Fußspur-View
+  PASS  Marker: Home-View
+  PASS  Marker: Fortschritts-Punkte
+  PASS  Marker: Kalt-Warm-Skala
+  PASS  Marker: Kompass-Pfeil
+  PASS  Marker: Fernglas-Freischaltung
+  PASS  Marker: Übungsmodus
+  PASS  Marker: Sprite-Fang
+  PASS  Marker: Zoom-Buttons
+  PASS  Marker: GPS
+  PASS  Marker: Kompass-Sensor
+  PASS  Marker: Sammel-Persistenz
+== Offline-Fähigkeit ==
+  PASS  keine externen CDN-Referenzen
+
+ALLE CHECKS BESTANDEN
+exit=0

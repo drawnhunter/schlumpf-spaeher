@@ -1,0 +1,16 @@
+=== Run 8 | 2026-09-28 (v3: Schrittzaehler + Hybrid-Fortschritt + Kompass-Fallback) ===
+
+Befehle und Ergebnisse:
+--- node --check game.js / app.js                    exit=0
+--- node verifier/v3/test_game_v3.mjs                exit=0 (ALLE V3-TESTS BESTANDEN)
+      Detektor: 2-Hz-Gehsignal 5 s -> 10 Schritte; Ruhe -> 0; Refraktaer ok; Wackeln < Schwelle -> 0
+--- node verifier/v2/test_game_v2.mjs                exit=0 (ALLE V2-TESTS BESTANDEN)
+--- node verifier/v1/check_assets.mjs                exit=0 (ALLE CHECKS BESTANDEN)
+
+Visuelle Sichtpruefung (v3-Screenshots), manuell:
+steps=5:  1/6 Punkte gruen, „19 m", Skala Eiskalt (wenig Fuellung), Button gesperrt — OK
+steps=20: 6/6 Punkte gruen, „0 m", Skala GLUEHEND, Button gruen — OK (Zufallsdistanz ~13 m)
+steps=40: 6/6 Punkte gruen, „0 m", GLUEHEND, Button gruen — OK
+
+Hinweis: steps=20/40 zeigen Volllast, weil die Demo-Distanz zufaellig klein ausfiel;
+der partielle Verlauf ist durch steps=5 und die Einzeltests (0.275 / 0.99) abgesichert.

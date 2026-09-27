@@ -1,0 +1,23 @@
+=== Run 7 | 2026-09-28 (updateNav-Throttle-Fix, force bei diskreten Updates) ===
+
+Befund aus Run 5/6-Screenshots: fakeWalk-Update wurde vom 100-ms-Throttle verworfen,
+daher blieben Punkte/Thermo auf dem Startzustand. Fix: updateNav(force) — diskrete
+Updates (GPS-Fix, Demo-Schritt, Polling, Reroll) erzwingen Render, Kompass-Events
+bleiben gedrosselt.
+
+Visuelle Sichtprüfung (v2b-Screenshots), manuell:
+walk=6:  2/6 Punkte gruen, 9 m, Skala "Kalt" (blau, Teilfuellung), Button gesperrt — OK
+walk=14: 5/6 Punkte gruen, 4 m, Skala "Warm" (orange), Button gesperrt — OK
+walk=22: 6/6 Punkte gruen, 0 m, Skala "GLUEHEND!" (rot, voll), Status "Ganz nah!",
+         Fang-Button gruen/pulsierend — OK
+
+Befehle nach dem Fix:
+--- node --check app.js
+--- node verifier/v2/test_game_v2.mjs
+--- node verifier/v1/check_assets.mjs
+(Ergebnisse siehe unten, werden per Shell angehaengt)
+
+assets_raw/ entfernt (Snapshot schlank halten).
+node --check app.js: exit=0
+test_game_v2: exit=0 (ALLE V2-TESTS BESTANDEN)
+check_assets: exit=0 (ALLE CHECKS BESTANDEN)
