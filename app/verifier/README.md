@@ -41,3 +41,16 @@ Append-only Index der Prüfkriterien-Versionen. Jeder Lauf wird unter `runs/` pr
 - Hinweis Backend-Test: Deps lokal in `/tmp/srv` installiert (Sandbox-Mount ohne Symlinks),
   Aufruf mit `NODE_PATH=/tmp/srv/node_modules`. Auf echter Hardware reicht `npm install`.
 - Ergänzt v4, ersetzt keine Kriterien.
+
+## v6 (2026-09-28, ~04:00)
+- Datei: `v6/criteria.md`, Tests: `v6/test_game_v6.mjs`, `v6/check_v6_assets.mjs`
+- Neu: PWA (Manifest landscape/standalone, Icons, Service Worker mit Runtime-Cache),
+  Querformat-Redesign aller Views (+ Home-Scroll-Bugfix), Onboarding (Gast oder Konto,
+  optionale E-Mail → Backend-Spalte + Validierung), Avatar-Baukasten (6 Slots, 21 Teile,
+  kalibrierte Anker, Avatar = Maskottchen), Schlumpfinsel (6×4-Felder, Bebauen mit
+  Funden, Bewohner wandern), 6 neue Radar-Items (→ 20 gesamt) + QR-Erweiterungs-Pack,
+  Schwierigkeit als Dropdown, Schrift Baloo 2 (OFL, lokal).
+- Überholte v4-Erwartung: „14 Sammelobjekte" gilt ab v6 als „20" (Katalog-Erweiterung,
+  dokumentiert; v4-Test schlägt entsprechend nur in dieser einen Zeile fehl).
+- Behobene Bugs in diesem Release: navMascot-Klassenlöschung (Wrapper), #start
+  safe-center, screen=home-Zweig, Thermo in Queransicht, Home-Scrollen.

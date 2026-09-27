@@ -41,6 +41,9 @@ let spriteRel = null;        // Fang: Sprite-Richtung relativ zum Kompass
 let catchClassic = false;    // Fang: Fallback ohne Gyro (Sprite auf Screen)
 let orientSeen = false;      // kam im Fang schon ein Orientierungs-Event?
 let scanStream = null, scanRAF = null, scanCanvas = null, scanFound = false, lastQrToast = 0;
+let avatar = null;           // eigener Schlumpf (Slot-Auswahl)
+let island = null;           // Insel-Bebauung
+let inselEdit = false, pickedTile = null, wanderTimer = null;
 
 /* ---------- v5: Sprachführung ---------- */
 let voiceOn = localStorage.getItem('schlumpfVoice') !== '0';
@@ -65,7 +68,197 @@ function voiceReset() {
   lastDirCat = null; lastBucket = null; lastSpeakAt = 0; unlockSpoken = false;
   $('mascotBubble').textContent = 'Bereit zur Suche!';
   $('mascotDir').textContent = '🧭';
-  $('navMascot').className = '';
+  $('navMascotWrap').className = '';
+}
+
+/* ---------- v6: Avatar ---------- */
+/* Kalibrierte Anker (visuell getestet): [Breite%, Links%, Wert%, Ankermodus]
+   Hut wird an der UNTERKANTE verankert (sitzzt so auf jeder Kopfform). */
+const AVATAR_ANCHORS = {
+  ruecken: { default: [.60, .00, .24, 'top'], schirm: [.55, .20, .02, 'top'], fluegel: [.62, .19, .16, 'top'], rucksack: [.55, .00, .26, 'top'] },
+  hut:     { default: [.56, .22, .75, 'bottom'], zipfel: [.56, .22, .75, 'bottom'], zauber: [.58, .21, .75, 'bottom'], kranz: [.64, .18, .73, 'bottom'], pilz: [.68, .16, .75, 'bottom'] },
+  kopf:    { default: [.44, .28, .145, 'top'], bart: [.50, .25, .25, 'top'] },
+  ober:    { default: [.66, .17, .32, 'top'] },
+  unter:   { default: [.58, .21, .58, 'top'] },
+  hand:    { default: [.34, .70, .40, 'top'], blume: [.30, .72, .42, 'top'], korb: [.34, .70, .48, 'top'] },
+};
+function loadAvatar() {
+  try { avatar = JSON.parse(localStorage.getItem('schlumpfAvatar') || 'null'); } catch (e) { avatar = null; }
+  if (!G.avatarValid(avatar)) avatar = G.avatarDefault();
+}
+function saveAvatarState() { localStorage.setItem('schlumpfAvatar', JSON.stringify(avatar)); cloudPush(); }
+/* Avatar in ein Element rendern (gestapelte Ebenen mit kalibrierten Ankern) */
+function renderAvatar(el, av) {
+  el.innerHTML = '';
+  const parts = [];
+  if (av.ruecken) parts.push(['ruecken', av.ruecken]);
+  parts.push([null, null]); // Basis
+  for (const s of ['unter', 'ober', 'hand', 'kopf', 'hut']) if (av[s]) parts.push([s, av[s]]);
+  for (const [slot, id] of parts) {
+    const img = document.createElement('img');
+    img.draggable = false;
+    if (!slot) {
+      img.src = 'assets/av/base.png';
+      img.className = 'p-base';
+    } else {
+      img.src = G.avatarImg(slot, id);
+      img.className = 'p-' + slot;
+      const [w, l, v, mode] = (AVATAR_ANCHORS[slot] && (AVATAR_ANCHORS[slot][id] || AVATAR_ANCHORS[slot].default)) || [.5, .25, 0, 'top'];
+      img.style.width = (w * 100) + '%';
+      img.style.left = (l * 100) + '%';
+      if (mode === 'bottom') img.style.bottom = (v * 100) + '%';
+      else img.style.top = (v * 100) + '%';
+    }
+    el.appendChild(img);
+  }
+}
+function renderMascots() {
+  renderAvatar($('homeAvatar'), avatar);
+  renderAvatar($('navMascot'), avatar);
+}
+
+/* ---------- Avatar-Editor ---------- */
+let editAvatar = null, activeSlot = 'hut';
+function openAvatar() {
+  editAvatar = Object.assign({}, avatar);
+  activeSlot = 'hut';
+  renderSlotTabs(); renderOptGrid();
+  renderAvatar($('avatarPreview'), editAvatar);
+  show('avatar');
+}
+function closeAvatar() { show('home'); }
+function renderSlotTabs() {
+  const labels = { hut: '🎩 Hut', kopf: '😊 Kopf', ober: '🎽 Oberkörper', unter: '👖 Unterkörper', hand: '🖐️ In Hand', ruecken: '🎒 Rücken' };
+  const t = $('slotTabs'); t.innerHTML = '';
+  for (const s of G.AVATAR_SLOTS) {
+    const b = document.createElement('button');
+    b.textContent = labels[s];
+    b.classList.toggle('sel', s === activeSlot);
+    b.onclick = () => { activeSlot = s; renderSlotTabs(); renderOptGrid(); };
+    t.appendChild(b);
+  }
+}
+function renderOptGrid() {
+  const g = $('optGrid'); g.innerHTML = '';
+  // „Nichts"-Option
+  const none = document.createElement('button');
+  none.className = 'opt' + (editAvatar[activeSlot] == null ? ' sel' : '');
+  none.innerHTML = '<div class="clear">—</div><div class="oname">Nichts</div>';
+  none.onclick = () => { editAvatar[activeSlot] = null; renderOptGrid(); renderAvatar($('avatarPreview'), editAvatar); play('beep', .3); };
+  g.appendChild(none);
+  for (const p of G.AVATAR_PARTS[activeSlot]) {
+    const b = document.createElement('button');
+    b.className = 'opt' + (editAvatar[activeSlot] === p.id ? ' sel' : '');
+    b.innerHTML = `<img src="${G.avatarImg(activeSlot, p.id)}" alt="${p.name}"><div class="oname">${p.name}</div>`;
+    b.onclick = () => { editAvatar[activeSlot] = p.id; renderOptGrid(); renderAvatar($('avatarPreview'), editAvatar); play('beep', .3); };
+    g.appendChild(b);
+  }
+}
+function avatarRandom() {
+  for (const s of G.AVATAR_SLOTS) {
+    const pool = [null, ...G.AVATAR_PARTS[s].map(p => p.id)];
+    editAvatar[s] = pool[Math.floor(Math.random() * pool.length)];
+  }
+  renderOptGrid(); renderAvatar($('avatarPreview'), editAvatar);
+  play('sparkle', .6);
+}
+function saveAvatar() {
+  avatar = Object.assign({}, editAvatar);
+  saveAvatarState(); renderMascots();
+  play('fanfare', .8);
+  toast('💾 Dein Schlumpf ist fertig!');
+  show('home');
+}
+
+/* ---------- v6: Schlumpfinsel ---------- */
+function loadIsland() {
+  try { island = JSON.parse(localStorage.getItem('schlumpfInsel') || 'null'); } catch (e) { island = null; }
+  if (!island || !island.tiles) island = G.islandEmpty();
+}
+function saveIsland() { localStorage.setItem('schlumpfInsel', JSON.stringify(island)); cloudPush(); }
+function openInsel() {
+  renderIsland();
+  show('insel');
+  startWander();
+}
+function closeInsel() {
+  clearInterval(wanderTimer); wanderTimer = null;
+  $('tileModal').classList.remove('open');
+  inselEdit = false; $('insel').classList.remove('edit');
+  show('home');
+}
+function toggleInselEdit() {
+  inselEdit = !inselEdit;
+  $('insel').classList.toggle('edit', inselEdit);
+  toast(inselEdit ? '✏️ Tippe ein freies Feld zum Bauen' : 'Fertig gebaut!');
+  play('beep', .4);
+}
+function renderIsland() {
+  const grid = $('inselGrid'); grid.innerHTML = '';
+  for (let i = 0; i < G.ISLAND_TILES; i++) {
+    const t = document.createElement('div');
+    const itemId = island.tiles[i];
+    t.className = 'tile' + (itemId ? '' : ' empty');
+    if (itemId) {
+      const it = G.itemById(itemId);
+      const img = document.createElement('img');
+      img.src = it.img; img.alt = it.name; img.draggable = false;
+      t.appendChild(img);
+    }
+    t.addEventListener('pointerdown', () => onTileTap(i));
+    grid.appendChild(t);
+  }
+  const n = G.islandInhabitants(coll);
+  $('inselInfo').textContent = `🏝️ Bewohner: ${n} · Bauten: ${Object.keys(island.tiles).length}`;
+  renderBewohner(n);
+}
+function renderBewohner(n) {
+  const layer = $('bewohnerLayer'); layer.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement('img');
+    b.src = 'assets/schlumpf.png';
+    b.className = 'bewohner';
+    b.style.left = (20 + Math.random() * 55) + '%';
+    b.style.top = (30 + Math.random() * 45) + '%';
+    b.draggable = false;
+    layer.appendChild(b);
+  }
+}
+function startWander() {
+  clearInterval(wanderTimer);
+  wanderTimer = setInterval(() => {
+    document.querySelectorAll('#bewohnerLayer .bewohner').forEach(b => {
+      b.style.left = (20 + Math.random() * 55) + '%';
+      b.style.top = (30 + Math.random() * 45) + '%';
+    });
+  }, 2600);
+}
+function onTileTap(idx) {
+  if (!inselEdit) return;
+  pickedTile = idx;
+  const picker = $('tilePicker'); picker.innerHTML = '';
+  const owned = G.ITEMS.filter(it => (coll[it.id] || 0) > 0);
+  if (owned.length === 0) {
+    picker.innerHTML = '<p style="grid-column:1/-1;font-weight:800;color:#7286a0">Noch nichts gefunden — erst suchen gehen! 🔭</p>';
+  }
+  for (const it of owned) {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<img src="${it.img}" alt="${it.name}"><div class="oname">${it.name}</div>`;
+    b.onclick = () => {
+      const ni = G.islandPlace(island, coll, pickedTile, it.id);
+      if (ni) { island = ni; saveIsland(); renderIsland(); play('sparkle', .6); }
+      $('tileModal').classList.remove('open');
+    };
+    picker.appendChild(b);
+  }
+  $('tileClear').style.display = island.tiles[idx] ? '' : 'none';
+  $('tileModal').classList.add('open');
+}
+function clearTile() {
+  const ni = G.islandRemove(island, pickedTile);
+  if (ni) { island = ni; saveIsland(); renderIsland(); }
+  $('tileModal').classList.remove('open');
 }
 
 /* ---------- Sounds ---------- */
@@ -101,7 +294,7 @@ function cloudPush() {
   clearTimeout(pushTimer);
   pushTimer = setTimeout(async () => {
     try {
-      const r = await api('/state', { method: 'PUT', body: JSON.stringify({ state: { collection: coll, diff } }) });
+      const r = await api('/state', { method: 'PUT', body: JSON.stringify({ state: { collection: coll, diff, avatar, island } }) });
       setSyncStatus(r.ok ? '☁️ In der Cloud gespeichert.' : '⚠️ Nur lokal gespeichert (Server meldet Fehler).');
     } catch (e) { setSyncStatus('⚠️ Nur lokal gespeichert (Server nicht erreichbar).'); }
   }, 1500);
@@ -114,6 +307,15 @@ async function cloudPull() {
     if (state && state.collection) {
       coll = G.mergeCollections(coll, state.collection);
       if (state.diff && G.DIFFS[state.diff]) { diff = state.diff; localStorage.setItem('schlumpfDiff', diff); renderDiff(); }
+      if (state.avatar && G.avatarValid(state.avatar) && !localStorage.getItem('schlumpfAvatar')) {
+        avatar = state.avatar;
+        localStorage.setItem('schlumpfAvatar', JSON.stringify(avatar));
+        renderMascots();
+      }
+      if (state.island && state.island.tiles && !localStorage.getItem('schlumpfInsel')) {
+        island = state.island;
+        localStorage.setItem('schlumpfInsel', JSON.stringify(island));
+      }
       saveColl(); renderChip();
     }
   } catch (e) {}
@@ -126,15 +328,19 @@ function renderKonto() {
   $('kontoLogged').style.display = loggedIn ? '' : 'none';
   if (!loggedIn) setSyncStatus('Ohne Konto bleibt die Sammlung nur auf diesem Gerät.');
 }
-async function kontoAuth(path, okMsg) {
-  const name = $('kontoName').value.trim();
-  const pin = $('kontoPin').value.trim();
-  if (name.length < 2) { toast('Name fehlt (mind. 2 Zeichen)'); return; }
-  if (!/^\d{4}$/.test(pin)) { toast('PIN = 4 Ziffern'); return; }
+async function authRequest(path, name, pin, email, okMsg) {
+  name = (name || '').trim();
+  if (name.length < 2) { toast('Name fehlt (mind. 2 Zeichen)'); return false; }
+  if (!/^\d{4}$/.test(pin)) { toast('PIN = 4 Ziffern'); return false; }
+  const body = { name, pin };
+  if (email && email.trim()) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { toast('⚠️ E-Mail sieht komisch aus'); return false; }
+    body.email = email.trim();
+  }
   try {
-    const r = await api(path, { method: 'POST', body: JSON.stringify({ name, pin }) });
+    const r = await api(path, { method: 'POST', body: JSON.stringify(body) });
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) { toast('⚠️ ' + (data.error || 'Fehler ' + r.status)); return; }
+    if (!r.ok) { toast('⚠️ ' + (data.error || 'Fehler ' + r.status)); return false; }
     apiToken = data.token; apiUser = data.name;
     localStorage.setItem('schlumpfToken', apiToken);
     localStorage.setItem('schlumpfUser', apiUser);
@@ -142,12 +348,30 @@ async function kontoAuth(path, okMsg) {
     await cloudPull();
     renderKonto();
     setSyncStatus('☁️ Verbunden. Sammlung wird synchronisiert.');
+    return true;
   } catch (e) {
     toast('⚠️ Server nicht erreichbar — bleibt lokal');
+    return false;
   }
 }
-function doRegister() { kontoAuth('/register', '🎉 Konto erstellt!'); }
-function doLogin() { kontoAuth('/login', '👋 Willkommen zurück!'); }
+function doRegister() { authRequest('/register', $('kontoName').value, $('kontoPin').value, $('kontoMail').value, '🎉 Konto erstellt!'); }
+function doLogin() { authRequest('/login', $('kontoName').value, $('kontoPin').value, null, '👋 Willkommen zurück!'); }
+
+/* ---------- v6: Onboarding ---------- */
+function startAsGuest() {
+  localStorage.setItem('schlumpfOnboarded', '1');
+  play('fanfare', .6);
+  toast('🎒 Los geht\'s, kleiner Sucher!');
+  show('home');
+}
+async function startRegister() {
+  const okGo = await authRequest('/register', $('startName').value, $('startPin').value, $('startMail').value, '🎉 Konto erstellt!');
+  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); }
+}
+async function startLogin() {
+  const okGo = await authRequest('/login', $('startName').value, $('startPin').value, null, '👋 Willkommen zurück!');
+  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); }
+}
 async function doLogout() {
   try { await api('/logout', { method: 'POST' }); } catch (e) {}
   apiToken = null; apiUser = null;
@@ -241,8 +465,8 @@ function setDiff(d) {
   renderDiff();
 }
 function renderDiff() {
-  document.querySelectorAll('#diffRow button').forEach(b => b.classList.toggle('sel', b.dataset.diff === diff));
   const D = G.DIFFS[diff];
+  $('diffSel').value = diff;
   $('searchDesc').textContent = `${D.label}: ${D.min}–${D.max} m entfernt`;
 }
 function geoErr() { if (!pos && !demoMode) enterDemo('Kein GPS-Signal — Übungsmodus an! Tipp den Pfeil zum Laufen.'); }
@@ -432,7 +656,7 @@ function updateNav(force) {
       const catLine = G.SPEECH[cat];
       if (cat !== lastDirCat) { speak(catLine); lastDirCat = cat; lastSpeakAt = nowS; }
       else if (nowS - lastSpeakAt > 9000 && !allowed) { speak(catLine); lastSpeakAt = nowS; }
-      $('navMascot').className = cat === 'straight' ? '' : cat;
+      $('navMascotWrap').className = cat === 'straight' ? '' : cat;
       $('mascotDir').textContent = { straight: '⬆️', left: '👈', right: '👉', back: '🔄' }[cat];
       if (nowS - lastSpeakAt <= 4000) $('mascotBubble').textContent = catLine;
     } else if (!allowed) {
@@ -839,12 +1063,17 @@ function startCustomHunt() {
   scheduleTick();
 }
 (function init() {
-  loadColl(); renderChip();
+  loadColl(); loadAvatar(); loadIsland(); renderChip(); renderMascots();
   diff = localStorage.getItem('schlumpfDiff') || G.DEFAULT_DIFF;
   renderDiff();
   $('voiceBtn').textContent = voiceOn ? '🔊' : '🔇';
   $('apiBaseInput').value = localStorage.getItem('schlumpfApi') || '';
   document.querySelector('#dirGrid button').classList.add('sel');
+
+  // PWA: Service Worker (nicht bei file://)
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 
   // Eltern-Ecke: lange auf die Fußzeile drücken
   let footT = null;
@@ -878,5 +1107,36 @@ function startCustomHunt() {
     show('eltern');
   } else if (scr === 'konto') {
     openKonto();
+  } else if (scr === 'avatar') {
+    openAvatar();
+  } else if (scr === 'insel') {
+    openInsel();
+  } else if (scr === 'start') {
+    show('start');
+  } else if (scr === 'home') {
+    show('home');
+  } else if (!localStorage.getItem('schlumpfOnboarded')) {
+    show('start');
+  } else {
+    show('home');
+  }
+  if (q.get('debug') === '1') {
+    setTimeout(() => {
+      const out = {};
+      for (const id of ['navMascotWrap', 'navMascot', 'disc', 'radar', 'homeAvatar']) {
+        const el = $(id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        out[id] = {
+          rect: [Math.round(r.width), Math.round(r.height)],
+          w: cs.width, h: cs.height, ar: cs.aspectRatio, mq: matchMedia('(orientation:landscape)').matches,
+        };
+      }
+      const div = document.createElement('div');
+      div.id = 'debugOut';
+      div.textContent = JSON.stringify(out);
+      document.body.appendChild(div);
+    }, 800);
   }
 })();

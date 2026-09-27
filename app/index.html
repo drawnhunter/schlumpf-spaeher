@@ -6,8 +6,18 @@
 <meta name="theme-color" content="#2e7fe0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="icon" type="image/png" href="assets/icons/icon-192.png">
 <title>Schlumpf-Späher</title>
 <style>
+  /* Schrift: Baloo 2 (OFL) — lokal gebündelt, offline verfügbar */
+  @font-face{
+    font-family:'Baloo 2';
+    src:url('assets/fonts/Baloo2-var.ttf') format('truetype-variations');
+    font-weight:400 800;font-style:normal;font-display:swap;
+  }
   :root{
     --blue:#2e7fe0; --navy:#233755; --yellow:#ffcd3c; --red:#e24646;
     --green:#3fae6a; --cream:#fff6d6; --shadow:0 7px 0 rgba(35,55,85,.12);
@@ -15,13 +25,14 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;overflow:hidden;}
   body{
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-family:'Baloo 2',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     background:linear-gradient(180deg,#dff0ff 0%,#cde6ff 55%,#dff5e4 100%);
     color:var(--navy); user-select:none; -webkit-user-select:none;
   }
   .view{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
     padding:calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
-    opacity:0;pointer-events:none;transform:scale(.985);transition:opacity .25s,transform .25s;z-index:1;}
+    opacity:0;pointer-events:none;transform:scale(.985);transition:opacity .25s,transform .25s;z-index:1;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .view.active{opacity:1;pointer-events:auto;transform:scale(1);}
 
   /* ---------- schwebende Deko ---------- */
@@ -51,6 +62,8 @@
   .c-buch{background:#fff6d6;border-color:#ffcd3c;}
   .c-tracks{background:#e8f1ff;border-color:#8db8f0;}
   .c-scan{background:#f3e8ff;border-color:#c9a2f0;}
+  .c-insel{background:#e0f4f1;border-color:#6fc7bd;}
+  .c-avatar{background:#ffeef3;border-color:#f0a2c0;}
   .diff-row{display:flex;gap:8px;width:100%;max-width:440px;margin-bottom:2px;}
   .diff-row button{flex:1;border:3px solid #fff;background:#fff;border-radius:16px;padding:9px 4px;
     font-size:14px;font-weight:900;color:#7286a0;cursor:pointer;box-shadow:var(--shadow);transition:.15s;}
@@ -207,6 +220,148 @@
   .track svg{height:128px;width:100%;}
   .fact{font-size:14.5px;font-weight:700;color:#6b5d33;margin-top:8px;line-height:1.35;min-height:44px;
     border-top:2px dashed #e0c98a;padding-top:8px;}
+  /* ---------- v6: Scroll-Fix & Dropdown ---------- */
+  .cards{flex:none;margin:auto 0;}
+  .diff-sel{display:flex;align-items:center;gap:10px;width:100%;max-width:440px;margin-bottom:2px;
+    background:#fff;border:3px solid #fff;border-radius:18px;padding:8px 14px;box-shadow:var(--shadow);}
+  .diff-sel label{font-weight:800;font-size:15px;color:#7286a0;white-space:nowrap;}
+  .diff-sel select{flex:1;border:none;background:transparent;font-family:inherit;font-weight:800;
+    font-size:17px;color:var(--navy);padding:6px 2px;outline:none;}
+
+  /* ---------- v6: Onboarding ---------- */
+  #start{justify-content:safe center;background:linear-gradient(180deg,#dff0ff,#dff5e4);}
+  #start .mascot{height:clamp(90px,20vh,130px);}
+  .start-card{background:#fff;border-radius:26px;padding:20px;width:100%;max-width:400px;
+    box-shadow:var(--shadow);margin-top:12px;}
+  .guest-btn{width:100%;border:none;border-radius:20px;padding:18px;font-size:20px;font-weight:800;
+    background:var(--green);color:#fff;cursor:pointer;box-shadow:var(--shadow);font-family:inherit;}
+  .guest-btn:active{transform:scale(.96);}
+  .start-or{display:flex;align-items:center;gap:12px;margin:14px 0;color:#8fa1ba;font-weight:800;font-size:14px;}
+  .start-or::before,.start-or::after{content:"";flex:1;height:2px;background:#e3ebf5;border-radius:2px;}
+  .start-links{display:flex;gap:10px;margin-top:10px;}
+  .start-links button{flex:1;border:none;border-radius:16px;padding:12px;font-size:15px;font-weight:800;
+    cursor:pointer;font-family:inherit;background:#e8f1ff;color:var(--navy);}
+  .start-links .primary{background:var(--blue);color:#fff;}
+
+  /* ---------- v6: Avatar-Editor ---------- */
+  #avatar{justify-content:flex-start;background:linear-gradient(180deg,#f3e8ff,#e6d9fb);}
+  .avatar-body{display:flex;gap:14px;align-items:stretch;width:100%;max-width:720px;flex:1;min-height:0;}
+  .avatar-stage{flex:0 0 46%;background:#fff;border-radius:26px;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;min-height:240px;}
+  .avatarfig{position:relative;width:min(200px,44vw);aspect-ratio:485/700;}
+  .avatarfig.mini{width:auto;height:100%;}
+  .avatarfig img{position:absolute;height:auto;pointer-events:none;}
+  .avatarfig .p-base{left:0;top:0;width:100%;height:100%;}
+  .avatarfig .p-ruecken{z-index:1;}
+  .avatarfig .p-base{z-index:2;}
+  .avatarfig .p-unter{z-index:3;}
+  .avatarfig .p-ober{z-index:4;}
+  .avatarfig .p-hand{z-index:5;}
+  .avatarfig .p-kopf{z-index:6;}
+  .avatarfig .p-hut{z-index:7;}
+  .avatar-ctrl{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .slot-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .slot-tabs button{border:3px solid #fff;background:#fff;border-radius:14px;padding:8px 10px;
+    font-size:14px;font-weight:800;color:#7286a0;cursor:pointer;font-family:inherit;}
+  .slot-tabs button.sel{background:var(--yellow);color:var(--navy);border-color:#e8b400;}
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;overflow-y:auto;
+    flex:1;align-content:start;padding-bottom:6px;}
+  .opt{background:#fff;border:3px solid transparent;border-radius:18px;padding:8px 4px;text-align:center;
+    cursor:pointer;box-shadow:var(--shadow);font-family:inherit;}
+  .opt.sel{border-color:var(--blue);background:#e8f1ff;}
+  .opt img{height:56px;max-width:100%;}
+  .opt .oname{font-size:12.5px;font-weight:800;margin-top:2px;}
+  .opt .clear{font-size:24px;font-weight:800;color:#b9c6d8;height:56px;display:flex;align-items:center;justify-content:center;}
+  .avatar-btns{display:flex;gap:10px;margin-top:8px;}
+  .avatar-btns button{flex:1;border:none;border-radius:16px;padding:13px;font-size:16px;font-weight:800;
+    cursor:pointer;font-family:inherit;box-shadow:var(--shadow);}
+  .ab-random{background:#fff;color:var(--navy);}
+  .ab-save{background:var(--green);color:#fff;}
+
+  /* ---------- v6: Schlumpfinsel ---------- */
+  #insel{padding:0;background:#0b2a4a;overflow:hidden;}
+  .insel-wrap{position:absolute;inset:0;}
+  #inselBg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .insel-grid{position:absolute;inset:0;display:grid;
+    grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr);
+    padding:16% 13% 14% 13%;}
+  .tile{position:relative;border-radius:14px;}
+  .tile img{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain;
+    filter:drop-shadow(0 4px 3px rgba(0,0,0,.35));pointer-events:none;}
+  .tile.empty::after{content:"+";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:rgba(255,255,255,.28);font-size:26px;font-weight:800;opacity:0;transition:opacity .2s;}
+  #insel.edit .tile.empty::after{opacity:1;}
+  #insel.edit .tile.empty{background:rgba(255,255,255,.14);outline:2px dashed rgba(255,255,255,.5);}
+  .bewohner{position:absolute;width:11%;pointer-events:none;z-index:5;
+    transition:left 2.4s ease-in-out, top 2.4s ease-in-out;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3));}
+  .insel-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+    padding:calc(8px + env(safe-area-inset-top)) 12px 8px;z-index:8;
+    background:linear-gradient(180deg,rgba(8,30,50,.55),transparent);}
+  .insel-chip{background:rgba(255,255,255,.92);border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;}
+  .insel-bottom{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;justify-content:center;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom));z-index:8;
+    background:linear-gradient(0deg,rgba(8,30,50,.55),transparent);}
+  .insel-bottom button{border:none;border-radius:18px;padding:13px 18px;font-size:16px;font-weight:800;
+    font-family:inherit;cursor:pointer;background:rgba(255,255,255,.94);color:var(--navy);box-shadow:0 4px 10px rgba(0,0,0,.3);}
+  .insel-bottom .primary{background:var(--yellow);}
+  .picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:40vh;overflow-y:auto;}
+  .picker-grid .opt img{height:64px;}
+
+  /* ---------- v6: Querformat ---------- */
+  @media (orientation: landscape){
+    #home .mascot{height:15vh;min-height:64px;}
+    h1{font-size:clamp(26px,6vh,38px);}
+    .sub{margin-bottom:6px;}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:880px;width:100%;margin:6px auto;}
+    .card{padding:10px 14px;}
+    .card img{height:64px;}
+    .card .t{font-size:19px;}
+    .card .d{font-size:13px;}
+    .diff-sel{max-width:880px;margin:0 auto 6px;}
+    #home .chip{margin:2px 0 6px;padding:6px 16px;}
+    .konto-link{margin-top:4px;padding:5px 14px;font-size:13px;}
+    #home .foot{margin-top:4px;}
+    /* Radar quer: Maskottchen links, Scheibe mitte, Thermo+Buttons rechts */
+    #radar{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto 1fr auto;
+      column-gap:8px;align-items:center;}
+    #radar .nav-top{grid-column:1/4;}
+    #radar .gps-note{grid-column:1/4;margin:0;}
+    #radar .mascot-row{grid-column:1;grid-row:3;flex-direction:column;align-items:flex-start;
+      width:140px;margin:0;align-self:center;}
+    #radar .mascot-row .bubble{min-height:0;font-size:13px;padding:8px 10px;}
+    #radar .mascot-row .bubble::before{left:auto;top:-12px;transform:none;border:8px solid transparent;border-bottom-color:var(--yellow);}
+    #navMascotWrap .avatarfig{height:11vh;min-height:56px;width:auto;}
+    #radar .ndots{grid-column:2;grid-row:2;margin:2px 0;}
+    #radar .stage{grid-column:2;grid-row:3;flex-direction:column;gap:8px;}
+    #radar .disc{width:min(34vh,240px);height:min(34vh,240px);}
+    #radar .arrow-svg{height:min(16vh,110px);}
+    #radar .thermo-wrap{display:flex;grid-column:3;grid-row:3;align-self:center;gap:6px;}
+    #radar .thermo{height:20vh;width:22px;}
+    #radar .scale-label{font-size:13px;}
+    #radar .nav-status{grid-column:2;grid-row:4;margin:0;}
+    #radar .nav-btns{grid-column:3;grid-row:4;flex-direction:row;width:auto;gap:8px;align-self:start;}
+    #radar .nav-btns button{padding:12px 10px;font-size:14px;}
+    #radar .nav-btns button{padding:14px 6px;font-size:15px;}
+    /* Buch quer */
+    #buch .grid{grid-template-columns:repeat(4,1fr);max-width:900px;}
+    .cell img{height:70px;}
+    /* Eltern/Konto quer */
+    #eltern,#konto{align-items:center;}
+    .eltern-card{max-width:560px;}
+    /* Tracks quer */
+    .track-row{max-width:900px;}
+    .track{flex-basis:44%;}
+    .track svg{height:100px;}
+    /* Fang quer: Linsen an Höhe orientieren */
+    .lens{width:min(58vh,340px);height:min(58vh,340px);top:46%;}
+    .scope-label{top:calc(46% + min(29vh,170px) + 10px);}
+    #sprite{width:min(20vh,150px);}
+    /* Avatar quer (Editor ist bereits zweispaltig) */
+    .avatar-body{max-width:900px;}
+    /* Start quer */
+    #start .start-card{max-width:480px;}
+  }
+
   .track.glow{outline:4px solid var(--yellow);outline-offset:3px;}
   #trackMsg{max-width:440px;text-align:center;font-size:15px;font-weight:800;min-height:24px;color:#3f5b45;margin:2px 0 8px;}
 
@@ -246,10 +401,11 @@
 
   /* ---------- v5: Schlumpf-Guide (Maskottchen) ---------- */
   .mascot-row{display:flex;align-items:center;gap:10px;margin-top:6px;width:100%;max-width:460px;}
-  #navMascot{height:84px;width:auto;transition:transform .35s;filter:drop-shadow(0 4px 3px rgba(0,0,0,.2));}
-  #navMascot.left{transform:rotate(-18deg) translateX(-8px);}
-  #navMascot.right{transform:rotate(18deg) translateX(8px);}
-  #navMascot.back{animation:flipAround .8s ease;}
+  #navMascotWrap{flex:none;transition:transform .35s;filter:drop-shadow(0 4px 3px rgba(0,0,0,.2));}
+  #navMascotWrap .avatarfig{height:84px;width:auto;}
+  #navMascotWrap.left{transform:rotate(-18deg) translateX(-8px);}
+  #navMascotWrap.right{transform:rotate(18deg) translateX(8px);}
+  #navMascotWrap.back{animation:flipAround .8s ease;}
   @keyframes flipAround{0%{transform:rotateY(0)}50%{transform:rotateY(180deg) scale(1.15)}100%{transform:rotateY(360deg)}}
   .bubble{flex:1;background:#fff;border:3px solid var(--yellow);border-radius:18px;padding:10px 14px;
     font-weight:900;font-size:15px;line-height:1.25;position:relative;box-shadow:var(--shadow);
@@ -296,25 +452,55 @@
 <span class="floaty" style="left:10%;bottom:18%;animation-delay:2.6s">⭐</span>
 <span class="floaty" style="right:12%;bottom:10%;animation-delay:.8s">🍃</span>
 
-<!-- ================= HOME ================= -->
-<section id="home" class="view active">
+<!-- ================= START / ONBOARDING ================= -->
+<section id="start" class="view">
   <img class="mascot" src="assets/schlumpf.png" alt="Waldschlumpf">
+  <h1>Schlumpf-Späher</h1>
+  <p class="sub">Wald-Ausrüstung für kleine Sucher</p>
+  <div class="start-card">
+    <button class="guest-btn" onclick="startAsGuest()">🎒 Als Gast spielen</button>
+    <div class="start-or">oder mit Konto — Sammlung auf jedem Gerät</div>
+    <input class="fld" id="startName" placeholder="Name" maxlength="20" autocomplete="off">
+    <input class="fld" id="startPin" placeholder="PIN — 4 Ziffern" inputmode="numeric" maxlength="4" autocomplete="off">
+    <input class="fld" id="startMail" placeholder="E-Mail (optional)" inputmode="email" autocomplete="off">
+    <div class="start-links">
+      <button onclick="startLogin()">Anmelden</button>
+      <button class="primary" onclick="startRegister()">Konto erstellen</button>
+    </div>
+  </div>
+  <p class="foot">Schrift: Baloo 2 (OFL) · Offline-fähig · Installierbar über „Zum Startbildschirm"</p>
+</section>
+
+<!-- ================= HOME ================= -->
+<section id="home" class="view">
+  <div class="mascot avatarfig mini" id="homeAvatar" style="height:clamp(96px,24vw,140px)"></div>
   <h1>Schlumpf-Späher</h1>
   <p class="sub">Wald-Ausrüstung für kleine Sucher</p>
   <div class="chip">📖 <span id="chipText">0 von 10 Arten</span><small id="chipCount">· 0 gefangen</small></div>
   <button class="konto-link" id="kontoBtn" onclick="openKonto()">👤 Konto &amp; Cloud</button>
   <div class="cards">
-    <div class="diff-row" id="diffRow">
-      <button data-diff="kurz" onclick="setDiff('kurz')">Kurz 🐣</button>
-      <button data-diff="mittel" onclick="setDiff('mittel')">Mittel 🚶</button>
-      <button data-diff="expedition" onclick="setDiff('expedition')">Expedition 🧭</button>
+    <div class="diff-sel">
+      <label for="diffSel">Schwierigkeit:</label>
+      <select id="diffSel" onchange="setDiff(this.value)">
+        <option value="kurz">Kurz 🐣 · 8–15 m</option>
+        <option value="mittel">Mittel 🚶 · 15–30 m</option>
+        <option value="expedition">Expedition 🧭 · 35–60 m</option>
+      </select>
     </div>
     <button class="card c-search" onclick="startHunt()">
       <img src="assets/geraet.png" alt="Suchgerät">
       <span><span class="t">Neue Suche</span><br><span class="d" id="searchDesc">Das Radar versteckt einen Schlumpf!</span></span>
     </button>
+    <button class="card c-insel" onclick="openInsel()">
+      <img src="assets/schlumpfhaus.png" alt="Insel">
+      <span><span class="t">Meine Insel</span><br><span class="d">Deine Schlümpfe einziehen lassen!</span></span>
+    </button>
+    <button class="card c-avatar" onclick="openAvatar()">
+      <img src="assets/sternenstab.png" alt="Avatar">
+      <span><span class="t">Mein Schlumpf</span><br><span class="d">Baue deinen eigenen Schlumpf</span></span>
+    </button>
     <button class="card c-buch" onclick="openBuch()">
-      <img src="assets/schlumpfhaus.png" alt="Schlumpfhaus">
+      <img src="assets/pilze.png" alt="Sammelbuch">
       <span><span class="t">Mein Sammelbuch</span><br><span class="d">Schlümpfe, Schätze und Rahmen-Ränge</span></span>
     </button>
     <button class="card c-scan" onclick="openScan()">
@@ -350,7 +536,7 @@
   </div>
   <div class="gps-note" id="gpsNote">GPS sucht …</div>
   <div class="mascot-row">
-    <img id="navMascot" src="assets/schlumpf.png" alt="Schlumpf-Guide">
+    <div id="navMascotWrap"><div class="avatarfig" id="navMascot"></div></div>
     <div class="bubble" id="mascotBubble">Bereit zur Suche!</div>
     <div class="mdir" id="mascotDir">🧭</div>
   </div>
@@ -552,6 +738,7 @@
     <div id="kontoForm">
       <input class="fld" id="kontoName" placeholder="Name (z. B. Alex oder der kleine Sucher)" maxlength="20" autocomplete="off">
       <input class="fld" id="kontoPin" placeholder="PIN — 4 Ziffern" inputmode="numeric" maxlength="4" autocomplete="off">
+      <input class="fld" id="kontoMail" placeholder="E-Mail (optional, für PIN-Rücksetzung)" inputmode="email" autocomplete="off">
       <div class="konto-btns">
         <button class="kb-make" onclick="doRegister()">Konto erstellen</button>
         <button class="kb-login" onclick="doLogin()">Anmelden</button>
@@ -569,6 +756,56 @@
     Konto (dann nur lokal). Server-Adresse lässt sich in der Eltern-Ecke eintragen.</p>
   </div>
 </section>
+
+<!-- ================= AVATAR-EDITOR ================= -->
+<section id="avatar" class="view">
+  <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:720px">
+    <button class="pill" onclick="closeAvatar()">‹ Zurück</button>
+    <h2 style="font-size:23px;font-weight:800">🎨 Mein Schlumpf</h2>
+    <span style="width:74px"></span>
+  </div>
+  <div class="avatar-body">
+    <div class="avatar-stage"><div class="avatarfig" id="avatarPreview"></div></div>
+    <div class="avatar-ctrl">
+      <div class="slot-tabs" id="slotTabs"></div>
+      <div class="opt-grid" id="optGrid"></div>
+      <div class="avatar-btns">
+        <button class="ab-random" onclick="avatarRandom()">🎲 Zufall</button>
+        <button class="ab-save" onclick="saveAvatar()">💾 Fertig!</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCHLUMPFINSEL ================= -->
+<section id="insel" class="view">
+  <div class="insel-wrap">
+    <img id="inselBg" src="assets/insel_bg.jpg" alt="Schlumpfinsel">
+    <div class="insel-grid" id="inselGrid"></div>
+    <div id="bewohnerLayer"></div>
+  </div>
+  <div class="insel-top">
+    <button class="pill" onclick="closeInsel()">‹ Zurück</button>
+    <span class="insel-chip" id="inselInfo">🏝️ Bewohner: 0</span>
+    <button class="pill" onclick="toggleInselEdit()">✏️ Bauen</button>
+  </div>
+  <div class="insel-bottom">
+    <button onclick="toast('Tippe ein Feld, um etwas zu platzieren — lange drücken zum Abräumen')">❔ Hilfe</button>
+    <button class="primary" onclick="toggleInselEdit()">✏️ Umgestalten</button>
+  </div>
+</section>
+
+<!-- Insel-Feld-Picker -->
+<div class="modal" id="tileModal">
+  <div class="modal-card">
+    <h3 style="margin-bottom:10px">Was soll hier stehen?</h3>
+    <div class="picker-grid" id="tilePicker"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="mb-close" onclick="$('tileModal').classList.remove('open')">Abbrechen</button>
+      <button class="mb-buch" onclick="clearTile()">🧹 Leeren</button>
+    </div>
+  </div>
+</div>
 
 <!-- Fang-Overlay -->
 <div class="modal" id="catchModal">

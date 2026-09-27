@@ -168,6 +168,13 @@
     { id: 'osterei',          name: 'Goldenes Osterei',   img: 'assets/osterei.png',          rarity: 3, qrOnly: true, fact: 'Glänzt so sehr, dass Vögel neidisch werden.' },
     { id: 'halloweenschlumpf',name: 'Halloween-Schlumpf', img: 'assets/halloweenschlumpf.png',rarity: 3, qrOnly: true, fact: 'Sein Kürbis leuchtet — aber er macht nur lustige Gesichter damit.' },
     { id: 'kuerbis',          name: 'Leucht-Kürbis',      img: 'assets/kuerbis.png',          rarity: 3, qrOnly: true, fact: 'Wärmt im Herbst die kleinen Schlumpf-Füße.' },
+    /* v6: Erweiterung (Radar-Pool) */
+    { id: 'amulett',   name: 'Eichel-Amulett',  img: 'assets/amulett.png',   rarity: 2, dodges: 1, fact: 'Wer es trägt, findet immer den Heimweg.' },
+    { id: 'gluehwurm', name: 'Glühwurm-Glas',   img: 'assets/gluehwurm.png', rarity: 2, dodges: 1, fact: 'Flimmert sanft — die beste Nachttischlampe der Schlümpfe.' },
+    { id: 'tautropfen',name: 'Tautropfen-Flasche',img: 'assets/tautropfen.png',rarity: 1, dodges: 0, fact: 'Frisch vom Blatt gefangen. Schmeckt nach Morgen.' },
+    { id: 'beeren',    name: 'Beerenkorb',      img: 'assets/beeren.png',    rarity: 1, dodges: 0, fact: 'Rote Waldbeeren — weg damit, bevor die Vögel kommen!' },
+    { id: 'moos',      name: 'Mooskissen',      img: 'assets/moos.png',      rarity: 1, dodges: 0, fact: 'So weich, dass man sofort müde wird.' },
+    { id: 'kastanie',  name: 'Kastanien-Kerl',  img: 'assets/kastanie.png',  rarity: 1, dodges: 0, fact: 'Glänzt wie frisch poliert und grinst den ganzen Tag.' },
   ];
   const RARITY_WEIGHT = { 1: 60, 2: 28, 3: 12 };
 
@@ -269,6 +276,57 @@
     caught: 'Super gemacht! Gefangen!',
   };
 
+  /* ---------- v6: Avatar-Baukasten ---------- */
+  const AVATAR_SLOTS = ['hut', 'kopf', 'ober', 'unter', 'hand', 'ruecken'];
+  const AVATAR_PARTS = {
+    hut:     [{ id: 'zipfel', name: 'Zipfelmütze' }, { id: 'pilz', name: 'Pilzhut' }, { id: 'kranz', name: 'Blumenkranz' }, { id: 'zauber', name: 'Zauberhut' }],
+    kopf:    [{ id: 'brille', name: 'Brille' }, { id: 'bart', name: 'Bart' }, { id: 'stern', name: 'Sternenbrille' }],
+    ober:    [{ id: 'weste', name: 'Weste' }, { id: 'schuerze', name: 'Schürze' }, { id: 'shirt', name: 'Streifenshirt' }],
+    unter:   [{ id: 'rot', name: 'Rote Hose' }, { id: 'blau', name: 'Blaue Hose' }, { id: 'latz', name: 'Latzhose' }],
+    hand:    [{ id: 'stock', name: 'Wanderstock' }, { id: 'laterne', name: 'Laterne' }, { id: 'blume', name: 'Blumen' }, { id: 'korb', name: 'Beerenkorb' }],
+    ruecken: [{ id: 'rucksack', name: 'Rucksack' }, { id: 'schirm', name: 'Pilzschirm' }, { id: 'fluegel', name: 'Blattflügel' }],
+  };
+  function avatarImg(slot, id) { return `assets/av/${slot}_${id}.png`; }
+  function avatarDefault() { return { hut: 'zipfel', kopf: null, ober: 'weste', unter: 'blau', hand: null, ruecken: null }; }
+  function avatarValid(a) {
+    if (!a || typeof a !== 'object') return false;
+    for (const s of AVATAR_SLOTS) {
+      const v = a[s];
+      if (v == null) continue;
+      if (!AVATAR_PARTS[s].some(p => p.id === v)) return false;
+    }
+    return true;
+  }
+
+  /* ---------- v6: Schlumpfinsel ---------- */
+  const ISLAND_COLS = 6, ISLAND_ROWS = 4;
+  const ISLAND_TILES = ISLAND_COLS * ISLAND_ROWS;
+  function islandEmpty() { return { tiles: {} }; }
+  function islandCanPlace(island, coll, idx, itemId) {
+    if (!island || !island.tiles) return false;
+    if (!Number.isInteger(idx) || idx < 0 || idx >= ISLAND_TILES) return false;
+    if (!itemById(itemId)) return false;
+    if ((coll[itemId] || 0) <= 0) return false;
+    return !island.tiles[idx];
+  }
+  function islandPlace(island, coll, idx, itemId) {
+    if (!islandCanPlace(island, coll, idx, itemId)) return null;
+    const tiles = Object.assign({}, island.tiles);
+    tiles[idx] = itemId;
+    return { tiles };
+  }
+  function islandRemove(island, idx) {
+    if (!island || !island.tiles || !island.tiles[idx]) return null;
+    const tiles = Object.assign({}, island.tiles);
+    delete tiles[idx];
+    return { tiles };
+  }
+  /* Waldschlümpfe + Editions-Schlümpfe ziehen ein (max. 5 sichtbar) */
+  function islandInhabitants(coll) {
+    const n = (coll.schlumpf || 0) + (coll.osterschlumpf || 0) + (coll.halloweenschlumpf || 0);
+    return Math.min(5, n);
+  }
+
   /* ---------- v5: Cloud-Sync (Sammlung zusammenführen) ---------- */
   /* Vereinigung zweier Sammlungen: pro Art der höhere Stand gewinnt */
   function mergeCollections(a, b) {
@@ -289,6 +347,8 @@
     CATCH_FOV, catchView, randomSpriteAngle, dodgeAngle,
     DIFFS, DEFAULT_DIFF,
     dirCategory, distBucket, SPEECH, mergeCollections,
+    AVATAR_SLOTS, AVATAR_PARTS, avatarImg, avatarDefault, avatarValid,
+    ISLAND_COLS, ISLAND_ROWS, ISLAND_TILES, islandEmpty, islandCanPlace, islandPlace, islandRemove, islandInhabitants,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = GameLogic;

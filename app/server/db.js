@@ -13,8 +13,14 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT UNIQUE NOT NULL,
   pin_hash TEXT NOT NULL,
   salt TEXT NOT NULL,
+  email TEXT,
   created_at TEXT DEFAULT (datetime('now'))
-);
+);`);
+
+/* Migration für bestehende DBs ohne email-Spalte */
+try { db.exec('ALTER TABLE users ADD COLUMN email TEXT'); } catch (e) { /* Spalte existiert schon */ }
+
+db.exec(`
 CREATE TABLE IF NOT EXISTS sessions (
   token TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id),
@@ -32,10 +38,10 @@ function hashPin(pin, salt) {
 }
 
 module.exports = {
-  createUser(name, pin) {
+  createUser(name, pin, email) {
     const salt = crypto.randomBytes(8).toString('hex');
-    const r = db.prepare('INSERT INTO users(name, pin_hash, salt) VALUES (?, ?, ?)')
-      .run(name, hashPin(pin, salt), salt);
+    const r = db.prepare('INSERT INTO users(name, pin_hash, salt, email) VALUES (?, ?, ?, ?)')
+      .run(name, hashPin(pin, salt), salt, email || null);
     return r.lastInsertRowid;
   },
   findUser(name) {
@@ -52,7 +58,7 @@ module.exports = {
   userByToken(t) {
     if (!t) return null;
     const s = db.prepare('SELECT user_id FROM sessions WHERE token = ?').get(t);
-    return s ? db.prepare('SELECT id, name FROM users WHERE id = ?').get(s.user_id) : null;
+    return s ? db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(s.user_id) : null;
   },
   dropSession(t) {
     db.prepare('DELETE FROM sessions WHERE token = ?').run(t);

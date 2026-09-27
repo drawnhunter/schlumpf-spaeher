@@ -1,0 +1,19 @@
+=== Run 11 | 2026-09-28 (v6: PWA, Querformat, Onboarding, Avatar, Insel, Erweiterung) ===
+--- node verifier/v6/test_game_v6.mjs
+exit=0 (ALLE V6-TESTS BESTANDEN)
+--- node verifier/v6/check_v6_assets.mjs
+exit=0 (ALLE V6-ASSET-CHECKS BESTANDEN)
+--- node verifier/v5/test_backend.mjs (E-Mail-Faelle)
+exit=0 (ALLE BACKEND-TESTS BESTANDEN)
+--- node verifier/v5/test_game_v5.mjs
+exit=0 (ALLE V5-TESTS BESTANDEN)
+--- node verifier/v4/test_game_v4.mjs
+exit=1 (1 V4-TEST(S) FEHLGESCHLAGEN)
+--- node verifier/v3/test_game_v3.mjs
+exit=0 (ALLE V3-TESTS BESTANDEN)
+--- node verifier/v1/check_assets.mjs
+exit=0 (ALLE CHECKS BESTANDEN)
+--- QR-E2E
+DECODED:SPAHER:ITEM:pilze
+--- Screenshots quer: start/home/radar/avatar/insel/buch OK; hoch: home/radar OK
+--- Gefundene+Fixierte Bugs: (a) navMascot className-Loeschung durch voiceReset/updateNav -> auf Wrapper umgeleitet; (b) justify-content safe center auf #start; (c) screen=home Zweig; (d) Thermo in Queransicht wieder sichtbar; (e) Home scrollt (overflow-y:auto auf .view)

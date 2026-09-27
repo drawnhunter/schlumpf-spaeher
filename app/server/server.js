@@ -25,14 +25,21 @@ function auth(req, res, next) {
 }
 
 app.post('/api/register', (req, res) => {
-  const { name, pin } = req.body || {};
+  const { name, pin, email } = req.body || {};
   if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 20) {
     return res.status(400).json({ error: 'Name muss 2–20 Zeichen haben' });
   }
   if (!/^\d{4}$/.test(String(pin))) return res.status(400).json({ error: 'PIN muss 4 Ziffern haben' });
+  let mail = null;
+  if (email != null && String(email).trim() !== '') {
+    mail = String(email).trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail) || mail.length > 80) {
+      return res.status(400).json({ error: 'E-Mail ungültig' });
+    }
+  }
   const n = name.trim();
   if (db.findUser(n)) return res.status(409).json({ error: 'Name ist schon vergeben' });
-  const uid = db.createUser(n, String(pin));
+  const uid = db.createUser(n, String(pin), mail);
   res.json({ token: db.createSession(uid), name: n });
 });
 
@@ -40,7 +47,7 @@ app.post('/api/login', (req, res) => {
   const { name, pin } = req.body || {};
   const u = db.findUser(String(name || '').trim());
   if (!db.checkPin(u, String(pin))) return res.status(401).json({ error: 'Name oder PIN falsch' });
-  res.json({ token: db.createSession(u.id), name: u.name });
+  res.json({ token: db.createSession(u.id), name: u.name, email: u.email || null });
 });
 
 app.get('/api/state', auth, (req, res) => res.json(db.getState(req.user.id)));

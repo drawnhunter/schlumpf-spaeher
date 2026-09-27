@@ -11,7 +11,9 @@ GPS-Schnitzeljagd-App für kleine Kinder (ab ~4): Schlümpfe im Wald verstecken 
 - Die Gamebox als Studio-Marke und „SkoGen One" (Kids/Mini/Pro — das Gen = Konsolen-Generation-Wortspiel) wurden am selben Abend geboren.
 
 ## Tech-Stack
-- **Frontend:** Reine Statik — `index.html`, `app.js` (UI/Elternbereich), `game.js` (Spiel-Engine), `jsQR.js` (lokal, kein CDN). Offline-first, Zustand in localStorage, Sounds in `sounds/`, Grafiken in `assets/`.
+- **Frontend:** Reine Statik — `index.html`, `app.js` (UI/Elternbereich), `game.js` (Spiel-Engine), `jsQR.js` (lokal, kein CDN). Offline-first, Zustand in localStorage, Sounds im App-Root (`*.mp3`), Grafiken in `assets/` (Avatar-Teile in `assets/av/`).
+- **PWA (seit v6):** `manifest.webmanifest` (landscape, standalone), `sw.js` (Precache Kern + Runtime-Cache, `/api` immer ans Netz), Icons in `assets/icons/`. Schrift: Baloo 2 (OFL) lokal in `assets/fonts/`.
+- **v6-Features:** Onboarding (Gast/Konto, optionale E-Mail), Avatar-Baukasten (6 Slots, kalibrierte Anker in `app.js` AVATAR_ANCHORS), Schlumpfinsel (6×4 Felder, Bewohner wandern), 20 Sammelobjekte (6 neue Radar-Funde + 4 QR-Editionen), Schwierigkeit als Dropdown, Querformat-Redesign.
 - **Backend:** Node/Express + better-sqlite3 in `app/server/` (API unter `/api/*`: register/login/state/logout, Token-Auth). Dient dem Cloud-Sync der Sammlung.
 - **Verifikation:** `app/verifier/` enthält Kriterien-Cataloge und Testskripte (node) je Version — dort nach Änderungen immer gegenprüfen.
 
@@ -50,12 +52,14 @@ Test-Login: beliebiger Name + 4-stelliger PIN. In der Deploy-DB liegt ein Testac
 - Hauseigene Apps **nie** über den Browser bedienen — nur Agent-APIs/CLI.
 - Fehlt ein API-Endpunkt → Bus-Ticket (Label `inbox-rewawi`/`inbox-pawawi`/…), nicht selbst Hacks bauen.
 - Secrets nie in Code/Chat/Files — Windows Credential Manager (`rewawi_api`, `pawawi_vetter_api`, `supporthub_api`, `dynv6_api`, `desec_api`).
-- Änderungen am Spielverhalten: immer im `app/verifier/`-Kriterienkatalog spiegeln.
+- Änderungen am Spielverhalten: immer im `app/verifier/`-Kriterienkatalog spiegeln (aktuelle Version: v6).
+- Verifier lokal: `node app/verifier/v6/test_game_v6.mjs` u.ä.; Backend-Test braucht installierte Deps in `app/server` (npm install).
 - Zielgruppe bedenken: UI für 4-Jährige (große Buttons, wenig Text) + Elternbereich (QR-Druck, Kind-Profile).
 
 ## Roadmap-Ideen (unsortiert, von Alexander/SkoGen-Abend)
 - SkoGen One (Kids/Mini/Pro) als Geräte-/Modus-Konzept in der Gamebox
-- Mehr Figuren/Sets (Ostern-, Halloween-Packs existieren schon als Druckvorlagen)
+- Mehr Figuren/Sets (Ostern-, Halloween- und Erweiterungs-Pack existieren als Druckvorlagen; v6 brachte 6 neue Radar-Funde)
+- v6 nachgewiesen (28.09.): Avatar-Baukasten, Schlumpfinsel, PWA-Installierbarkeit, Querformat, E-Mail optional bei Konto
 - Mehrsprachigkeit, Fortschritts-Sticker, Foto-Beweis beim Fund
 - Portal-Seite auf der Gamebox-Landingpage pro Kind/Gruppe
 

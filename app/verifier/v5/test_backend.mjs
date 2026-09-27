@@ -47,6 +47,16 @@ try {
   r = await fetch(base + '/api/register', J({ name: 'Guter Name', pin: '12' }));
   ok(r.status === 400, 'PIN nicht 4-stellig -> 400');
 
+  r = await fetch(base + '/api/register', J({ name: 'MailKind', pin: '4321', email: 'kind@example.com' }));
+  ok(r.status === 200, 'register mit optionaler E-Mail ok');
+
+  r = await fetch(base + '/api/register', J({ name: 'MailKind2', pin: '4321', email: 'kaputt@@x' }));
+  ok(r.status === 400, 'kaputte E-Mail -> 400');
+
+  r = await fetch(base + '/api/login', J({ name: 'MailKind', pin: '4321' }));
+  data = await r.json();
+  ok(r.status === 200 && data.email === 'kind@example.com', 'login liefert E-Mail zurück');
+
   r = await fetch(base + '/api/login', J({ name: 'Tester', pin: '0000' }));
   ok(r.status === 401, 'falsche PIN -> 401');
 

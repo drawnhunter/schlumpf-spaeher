@@ -44,13 +44,14 @@ CMD ["node", "server.js"]
 | Methode | Pfad | Body/Auth | Antwort |
 |---|---|---|---|
 | GET | `/api/health` | – | `{ ok, ts }` |
-| POST | `/api/register` | `{ name, pin }` | `{ token, name }` · 400 Validierung · 409 Name vergeben |
-| POST | `/api/login` | `{ name, pin }` | `{ token, name }` · 401 falsch |
+| POST | `/api/register` | `{ name, pin, email? }` | `{ token, name }` · 400 Validierung · 409 Name vergeben |
+| POST | `/api/login` | `{ name, pin }` | `{ token, name, email }` · 401 falsch |
 | GET | `/api/state` | Bearer | `{ state: null \| {...}, updatedAt? }` |
 | PUT | `/api/state` | Bearer, `{ state }` | `{ ok }` |
 | POST | `/api/logout` | Bearer | `{ ok }` |
 
-`state` ist ein freies JSON-Objekt (aktuell `{ collection: {itemId: anzahl}, diff }`).
+`state` ist ein freies JSON-Objekt (aktuell `{ collection: {itemId: anzahl}, diff, avatar, island }`).
+`email` ist bei der Registrierung optional (für späteren PIN-Reset durch Eltern/Admin).
 PINs werden gesalzen gehasht (SHA-256), Tokens sind opake 48-stellige Hex-Strings.
 Rate-Limits/HTTPS-Terminierung übernimmt Caddy.
 
