@@ -42,6 +42,10 @@ Test-Login: beliebiger Name + 4-stelliger PIN. In der Deploy-DB liegt ein Testac
 - **Axon** (KI-Assistent auf seinem Desktop): Deployment, Infrastruktur, Monitoring (stündlicher Praxis-DNS/HTTP-Monitor), Mail-Themen. Spricht Alexander mit „du" an, Antworten auf Deutsch.
 - **„die Chats"** (weitere Kimi-Chat-Sessions + Dev-Gruppe): bauen Features nach Tickets im SupportHub (Bus).
 
+## Zugänge (für Kimi-Chats auf diesem Rechner)
+- **GitHub:** `gh` CLI ist authentifiziert (Account `drawnhunter`) — einfach `gh`-Befehle nutzen, kein Token nötig. Repo: https://github.com/drawnhunter/schlumpf-spaeher
+- **SupportHub-Token:** liegt im Windows Credential Manager (`supporthub_api`). Auslesen per PowerShell (CredRead-P/Invoke, siehe `scripts/mail-sort.ps1` im OpenClaw-Workspace) — Token niemals in Chat/Files ausgeben, sondern direkt in Header/Body einsetzen. SupportHub-Relay: `POST https://support.praxios.dynv6.net/api/hub/agent/bus/issue` (JSON: token, titel, text, labels[]).
+
 ## Regeln & Konventionen
 - Hauseigene Apps **nie** über den Browser bedienen — nur Agent-APIs/CLI.
 - Fehlt ein API-Endpunkt → Bus-Ticket (Label `inbox-rewawi`/`inbox-pawawi`/…), nicht selbst Hacks bauen.
