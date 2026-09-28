@@ -1,0 +1,20 @@
+=== Run 12 | 2026-09-28 (v7: Wichtel-Wacht, Wizard, Standalone, Design-Pass, Erzaehler) ===
+--- node verifier/v7/test_game_v7.mjs
+exit=0 (ALLE V7-TESTS BESTANDEN)
+--- node verifier/v7/check_v7.mjs
+exit=0 (ALLE V7-CHECKS BESTANDEN)
+--- node verifier/v6/test_game_v6.mjs
+exit=1 (erwartete Ueberholung: 20->34 Items)
+  FAIL  genau 20 Sammelobjekte
+  FAIL  Item-IDs eindeutig
+--- node verifier/v5/test_game_v5.mjs
+exit=0 (ALLE V5-TESTS BESTANDEN)
+--- node verifier/v4/test_game_v4.mjs
+exit=1 (erwartete Ueberholung: 14->34)
+  FAIL  14 Sammelobjekte (10 Basis + 4 QR-Editionen)
+--- node verifier/v3/test_game_v3.mjs
+exit=0 (ALLE V3-TESTS BESTANDEN)
+--- node verifier/v1/check_assets.mjs
+exit=0 (ALLE CHECKS BESTANDEN)
+--- Screenshots: Wizard (hoch), Waldbuch 34 Arten (quer), Avatar mit Schatten/Atmen, Wichtel-Kontaktblatt (14) — manuell OK
+--- Fix waehrend Runs: islandInhabitants-Ersetzung war im ersten Anlauf nicht gelandet; nachgezogen, Tests gruen

@@ -44,15 +44,41 @@ let scanStream = null, scanRAF = null, scanCanvas = null, scanFound = false, las
 let avatar = null;           // eigener Schlumpf (Slot-Auswahl)
 let island = null;           // Insel-Bebauung
 let inselEdit = false, pickedTile = null, wanderTimer = null;
+let prevDots = [false, false, false, false, false, false];
+let lastPlopp = 0;
+
+/* Sofort-Feedback: weicher Plopp auf allen großen Buttons (max. alle 120 ms) */
+document.addEventListener('pointerdown', e => {
+  if (!e.target.closest('.card, .pill, .opt, .nav-btns button, .found-btn, .konto-link, .slot-tabs button, .guest-btn, .start-links button')) return;
+  const now = Date.now();
+  if (now - lastPlopp > 120) { lastPlopp = now; play('plopp', .3); }
+}, true);
 
 /* ---------- v5: Sprachführung ---------- */
 let voiceOn = localStorage.getItem('schlumpfVoice') !== '0';
 let lastDirCat = null, lastBucket = null, lastSpeakAt = 0, unlockSpoken = false;
+let deVoice = null;
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices().filter(v => /^de([-_]|$)/i.test(v.lang));
+  if (!vs.length) return;
+  // Ruhige Erzählerstimme bevorzugen: weibliche/deutsche Systemstimmen zuerst
+  deVoice = vs.find(v => /female|anna|petra|katja|marlene|vicki/i.test(v.name))
+         || vs.find(v => /google/i.test(v.name))
+         || vs[0];
+}
+if ('speechSynthesis' in window) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
 function speak(text) {
   if (!voiceOn || !('speechSynthesis' in window)) return;
   try {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'de-DE'; u.pitch = 1.7; u.rate = 1.05; // hohe Schlumpf-Stimme
+    u.lang = 'de-DE';
+    if (deVoice) u.voice = deVoice;
+    u.pitch = 1.08;  // ruhiger Erzähler statt Kind
+    u.rate = 0.92;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
   } catch (e) {}
@@ -69,6 +95,78 @@ function voiceReset() {
   $('mascotBubble').textContent = 'Bereit zur Suche!';
   $('mascotDir').textContent = '🧭';
   $('navMascotWrap').className = '';
+}
+
+/* ---------- v7: Wizard (Tutorial) ---------- */
+const WIZ_STEPS = [
+  'Hallo! Ich bin dein Schlumpf und begleite dich. Schön, dass du da bist!',
+  'Im Wald verstecken sich Schlümpfe und glitzernde Schätze. Wir finden sie zusammen!',
+  'Drücke auf „Neue Suche": Das Radar zeigt dir mit dem Pfeil den Weg — und ich erzähle ihn dir dazu.',
+  'Siehst du die Punkte? Sie werden grün, je näher du kommst. Und die Farbe daneben wird warm!',
+  'Ganz nah? Dann Fernglas auf! Schwenk es hin und her, bis du den Schlumpf siehst — und tipp ihn an!',
+  'Alles, was du fängst, wandert in dein Sammelbuch und auf deine Insel. Und nun: Los geht\'s, kleiner Sucher!',
+];
+let wizIdx = 0;
+function openWizard() {
+  wizIdx = 0;
+  renderAvatar($('wizAvatar'), avatar);
+  renderWiz();
+  $('wizard').classList.add('open');
+}
+function renderWiz() {
+  $('wizText').textContent = WIZ_STEPS[wizIdx];
+  const d = $('wizDots'); d.innerHTML = '';
+  WIZ_STEPS.forEach((_, i) => {
+    const s = document.createElement('span');
+    s.classList.toggle('on', i === wizIdx);
+    d.appendChild(s);
+  });
+  $('wizNext').textContent = wizIdx === WIZ_STEPS.length - 1 ? '🎒 Los geht\'s!' : 'Weiter ›';
+  speak(WIZ_STEPS[wizIdx]);
+}
+function wizStep() {
+  if (wizIdx < WIZ_STEPS.length - 1) { wizIdx++; renderWiz(); play('beep', .3); }
+  else wizDone();
+}
+function wizSkip() { wizDone(); }
+function wizDone() {
+  $('wizard').classList.remove('open');
+  localStorage.setItem('schlumpfWizard', '1');
+}
+
+/* ---------- v7: Standalone (Dreh-Hinweis, Installieren, Fullscreen) ---------- */
+let rotateDismissed = sessionStorage.getItem('rotateOK') === '1';
+function isPhoneSized() {
+  return Math.min(screen.width, screen.height) < 820 && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+}
+function checkRotate() {
+  const portrait = matchMedia('(orientation: portrait)').matches;
+  $('rotateHint').classList.toggle('show', portrait && isPhoneSized() && !rotateDismissed);
+}
+function dismissRotate() {
+  rotateDismissed = true;
+  sessionStorage.setItem('rotateOK', '1');
+  checkRotate();
+}
+if (window.matchMedia) {
+  try { matchMedia('(orientation: portrait)').addEventListener('change', checkRotate); } catch (e) {}
+}
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  $('installBtn').style.display = '';
+});
+async function installApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall = null;
+  $('installBtn').style.display = 'none';
+}
+function tryFullscreenOnce() {
+  if (sessionStorage.getItem('fsTried')) return;
+  sessionStorage.setItem('fsTried', '1');
+  try { document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
 }
 
 /* ---------- v6: Avatar ---------- */
@@ -263,7 +361,7 @@ function clearTile() {
 
 /* ---------- Sounds ---------- */
 const sfx = {};
-['beep', 'giggle', 'fanfare', 'sparkle', 'huch'].forEach(n => {
+['beep', 'giggle', 'fanfare', 'sparkle', 'huch', 'ding', 'plopp', 'stempel'].forEach(n => {
   sfx[n] = new Audio(n + '.mp3');
   sfx[n].preload = 'auto';
 });
@@ -358,19 +456,23 @@ function doRegister() { authRequest('/register', $('kontoName').value, $('kontoP
 function doLogin() { authRequest('/login', $('kontoName').value, $('kontoPin').value, null, '👋 Willkommen zurück!'); }
 
 /* ---------- v6: Onboarding ---------- */
+function maybeWizard() {
+  if (!localStorage.getItem('schlumpfWizard')) setTimeout(openWizard, 650);
+}
 function startAsGuest() {
   localStorage.setItem('schlumpfOnboarded', '1');
   play('fanfare', .6);
   toast('🎒 Los geht\'s, kleiner Sucher!');
   show('home');
+  maybeWizard();
 }
 async function startRegister() {
   const okGo = await authRequest('/register', $('startName').value, $('startPin').value, $('startMail').value, '🎉 Konto erstellt!');
-  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); }
+  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); maybeWizard(); }
 }
 async function startLogin() {
   const okGo = await authRequest('/login', $('startName').value, $('startPin').value, null, '👋 Willkommen zurück!');
-  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); }
+  if (okGo) { localStorage.setItem('schlumpfOnboarded', '1'); show('home'); maybeWizard(); }
 }
 async function doLogout() {
   try { await api('/logout', { method: 'POST' }); } catch (e) {}
@@ -414,6 +516,7 @@ function beginHunt() {
   huntStartAt = Date.now();
   autoToastDone = false;
   voiceReset();
+  prevDots = [false, false, false, false, false, false];
   stepsWalked = 0;
   stepDetect = G.makeStepDetector();
   gravLp = 0;
@@ -450,6 +553,7 @@ function ensureGps() {
 
 function startHunt() {
   beginHunt();
+  tryFullscreenOnce();
   if (demoMode) { demoStart(); scheduleTick(); return; }
   if (!navigator.geolocation) { enterDemo('Kein GPS auf diesem Gerät — Übungsmodus an!'); scheduleTick(); return; }
   if (pos) { newTarget(pos); updateNav(true); }
@@ -484,6 +588,7 @@ function demoStart() {
   huntStartAt = Date.now();
   autoToastDone = false;
   voiceReset();
+  prevDots = [false, false, false, false, false, false];
   stepsWalked = 0;
   stepDetect = G.makeStepDetector();
   noCompassMode = false;
@@ -610,7 +715,11 @@ function updateNav(force) {
   }
   $('distLbl').textContent = Math.max(0, Math.round(remaining)) + ' m';
 
-  G.dotsOf(p, 6).forEach((on, i) => $('navDots').children[i].classList.toggle('on', on));
+  G.dotsOf(p, 6).forEach((on, i) => {
+    if (on && !prevDots[i]) play('ding', .35); // Punkt wird grün: kurzes Ding
+    prevDots[i] = on;
+    $('navDots').children[i].classList.toggle('on', on);
+  });
 
   const sc = G.scaleOf(p);
   const fillH = Math.round(p * 100);
@@ -876,11 +985,13 @@ function doCatch(x, y) {
   play('fanfare', 1);
   speak(G.SPEECH.caught);
   confetti(x || innerWidth / 2, y || innerHeight / 2);
+  const isNewSpecies = !coll[spriteItem.id];
   const prevRank = G.rankOf(coll[spriteItem.id] || 0).rank;
   coll[spriteItem.id] = (coll[spriteItem.id] || 0) + 1;
   const newRank = G.rankOf(coll[spriteItem.id]).rank;
   saveColl(); renderChip();
   if (newRank > prevRank) setTimeout(() => play('sparkle', 1), 550);
+  if (isNewSpecies) setTimeout(() => play('stempel', .8), 750);
   setTimeout(() => {
     $('cmImg').src = spriteItem.img;
     $('cmName').textContent = spriteItem.name;
@@ -1011,6 +1122,7 @@ function onQr(text) {
   scanFound = true;
   const it = G.itemById(id);
   play('sparkle', 1);
+  const isNewSpecies = !coll[id];
   const prevRank = G.rankOf(coll[id] || 0).rank;
   coll[id] = (coll[id] || 0) + 1;
   const newRank = G.rankOf(coll[id]).rank;
@@ -1119,7 +1231,10 @@ function startCustomHunt() {
     show('start');
   } else {
     show('home');
+    if (!localStorage.getItem('schlumpfWizard')) setTimeout(openWizard, 650);
   }
+  checkRotate();
+  if (q.get('wizard') === '1') setTimeout(openWizard, 400);
   if (q.get('debug') === '1') {
     setTimeout(() => {
       const out = {};

@@ -429,6 +429,73 @@
   .kb-out{background:#e6ecf4;color:var(--navy);}
   .sync-line{font-size:13.5px;font-weight:800;color:#7286a0;margin-top:10px;min-height:18px;}
 
+  /* ---------- v7: Wizard & Rotate ---------- */
+  .modal.wiz{z-index:95;background:rgba(10,22,40,.78);}
+  .wiz-card{background:linear-gradient(180deg,#fff,#eaf4ff);border-radius:30px;padding:22px 20px;
+    max-width:380px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);
+    display:flex;flex-direction:column;align-items:center;gap:12px;animation:pop .3s ease;}
+  .wiz-card .avatarfig{animation:bob 2.4s ease-in-out infinite;}
+  .wiz-bubble{position:static;font-size:17px;line-height:1.35;min-height:56px;}
+  .wiz-bubble::before{display:none;}
+  .wiz-dots{display:flex;gap:7px;}
+  .wiz-dots span{width:11px;height:11px;border-radius:50%;background:#d7e2f0;}
+  .wiz-dots span.on{background:var(--blue);transform:scale(1.2);}
+  .wiz-btns{display:flex;gap:10px;width:100%;}
+  .wiz-btns button{flex:1;border:none;border-radius:16px;padding:13px;font-size:16px;font-weight:800;
+    cursor:pointer;font-family:inherit;}
+  .mb-go{background:var(--green);color:#fff;}
+  .mb-close{background:#e6ecf4;color:var(--navy);}
+  .rotate-hint{position:fixed;inset:0;background:rgba(10,22,40,.85);display:none;align-items:center;
+    justify-content:center;z-index:96;padding:24px;}
+  .rotate-hint.show{display:flex;}
+  .rotate-card{background:#fff;border-radius:26px;padding:24px;text-align:center;max-width:320px;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);}
+  .rotate-phone{font-size:52px;animation:rotPhone 1.6s ease-in-out infinite;}
+  @keyframes rotPhone{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(-90deg)}}
+  /* Avatar-Teile: leichter Tiefenschatten */
+  .avatarfig img:not(.p-base){filter:drop-shadow(0 2px 2px rgba(20,30,50,.22));}
+  /* v7 (R1 Quick Wins): Boden-Kontaktschatten + Kinn-AO + Atem-Animation */
+  .avatarfig::after{content:"";position:absolute;left:14%;right:14%;bottom:-2.5%;height:6.5%;
+    background:radial-gradient(ellipse at center,rgba(20,35,50,.30),transparent 68%);
+    border-radius:50%;z-index:0;pointer-events:none;}
+  .avatarfig::before{content:"";position:absolute;left:32%;width:36%;top:27%;height:7.5%;
+    background:radial-gradient(ellipse at center,rgba(70,40,25,.20),transparent 70%);
+    border-radius:50%;z-index:2.6;pointer-events:none;}
+  @keyframes atmen{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.022) scaleX(.996)}}
+  .avatar-stage .avatarfig,#navMascotWrap .avatarfig{
+    animation:atmen 2.6s ease-in-out infinite;transform-origin:50% 100%;}
+  @media (prefers-reduced-motion: reduce){
+    .avatar-stage .avatarfig,#navMascotWrap .avatarfig{animation:none !important;}
+  }
+
+  /* ---------- v7: Design-Pass (Kids-UI-Analyse) ---------- */
+  :root{--pop:cubic-bezier(.34,1.56,.64,1);--edge:0 6px 0 rgba(35,55,85,.22);}
+  /* Knautsch-Buttons mit Unterkante + Press-Versatz */
+  .card,.pill,.guest-btn,.eltern-start,.scan-btn,.konto-link,.insel-bottom button,
+  .avatar-btns button,.modal-btns button,.wiz-btns button,.opt,.start-links button{
+    box-shadow:var(--edge);}
+  .card,.pill,.opt,.guest-btn,.scan-btn,.insel-bottom button,.avatar-btns button,
+  .modal-btns button,.wiz-btns button,.konto-link,.start-links button,.eltern-start{
+    transition:transform .18s var(--pop), box-shadow .18s var(--pop);}
+  .card:active{transform:translateY(4px) scale(.97);box-shadow:0 2px 0 rgba(35,55,85,.22);}
+  .pill:active,.konto-link:active,.opt:active,.scan-btn:active,.guest-btn:active,
+  .eltern-start:active,.insel-bottom button:active,.avatar-btns button:active,
+  .modal-btns button:active,.wiz-btns button:active,.start-links button:active{
+    transform:translateY(4px) scale(.96);box-shadow:0 2px 0 rgba(35,55,85,.22);}
+  .found-btn{box-shadow:var(--edge);}
+  .found-btn:active{transform:translateY(4px) scale(.96);box-shadow:0 2px 0 rgba(35,55,85,.22);}
+  .nav-btns button{box-shadow:var(--edge);transition:transform .18s var(--pop),box-shadow .18s var(--pop);}
+  .nav-btns button:active{transform:translateY(4px) scale(.95);box-shadow:0 2px 0 rgba(35,55,85,.22);}
+  /* Wiggle-Affordanz: genau ein Element pro Screen winkt */
+  @keyframes wiggle4s{0%,12%,100%{transform:rotate(0)}3%{transform:rotate(-4deg) scale(1.02)}6%{transform:rotate(4deg) scale(1.02)}9%{transform:rotate(-3deg) scale(1.02)}}
+  .wiggle{animation:wiggle4s 4s ease-in-out infinite;}
+  /* Bounce-In für Fund-Modal */
+  @keyframes bounceIn{0%{transform:translateY(-60px) scale(.8);opacity:0}60%{transform:translateY(10px) scale(1.03);opacity:1}80%{transform:translateY(-5px) scale(.99)}100%{transform:translateY(0) scale(1)}}
+  .modal-card{animation:bounceIn .5s var(--pop);}
+  @media (prefers-reduced-motion: reduce){
+    .wiggle,.avatarfig,#navMascotWrap,.sweep i,.sweep2 i,.floaty,.rotate-phone{animation:none !important;}
+  }
+
   /* ---------- v4: Eltern-Modus ---------- */
   #eltern{justify-content:flex-start;background:linear-gradient(180deg,#fdf3e3,#f7e8cd);}
   #eltern h2{font-size:23px;font-weight:900;margin:4px 0 4px;}
@@ -477,7 +544,11 @@
   <h1>Schlumpf-Späher</h1>
   <p class="sub">Wald-Ausrüstung für kleine Sucher</p>
   <div class="chip">📖 <span id="chipText">0 von 10 Arten</span><small id="chipCount">· 0 gefangen</small></div>
-  <button class="konto-link" id="kontoBtn" onclick="openKonto()">👤 Konto &amp; Cloud</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+    <button class="konto-link" id="kontoBtn" onclick="openKonto()">👤 Konto &amp; Cloud</button>
+    <button class="konto-link" id="installBtn" style="display:none" onclick="installApp()">📲 App installieren</button>
+    <button class="konto-link" onclick="openWizard()">❓ Anleitung</button>
+  </div>
   <div class="cards">
     <div class="diff-sel">
       <label for="diffSel">Schwierigkeit:</label>
@@ -487,7 +558,7 @@
         <option value="expedition">Expedition 🧭 · 35–60 m</option>
       </select>
     </div>
-    <button class="card c-search" onclick="startHunt()">
+    <button class="card c-search wiggle" onclick="startHunt()">
       <img src="assets/geraet.png" alt="Suchgerät">
       <span><span class="t">Neue Suche</span><br><span class="d" id="searchDesc">Das Radar versteckt einen Schlumpf!</span></span>
     </button>
@@ -497,11 +568,11 @@
     </button>
     <button class="card c-avatar" onclick="openAvatar()">
       <img src="assets/sternenstab.png" alt="Avatar">
-      <span><span class="t">Mein Schlumpf</span><br><span class="d">Baue deinen eigenen Schlumpf</span></span>
+      <span><span class="t">Anzieh-Ecke</span><br><span class="d">Baue deinen eigenen Schlumpf</span></span>
     </button>
     <button class="card c-buch" onclick="openBuch()">
       <img src="assets/pilze.png" alt="Sammelbuch">
-      <span><span class="t">Mein Sammelbuch</span><br><span class="d">Schlümpfe, Schätze und Rahmen-Ränge</span></span>
+      <span><span class="t">Mein Waldbuch</span><br><span class="d">Schlümpfe, Schätze und Rahmen-Ränge</span></span>
     </button>
     <button class="card c-scan" onclick="openScan()">
       <svg viewBox="0 0 100 100" width="88" height="88" aria-label="QR">
@@ -531,7 +602,7 @@
   <div class="nav-top">
     <button class="pill" onclick="quitHunt()">‹ Zurück</button>
     <button class="pill" id="voiceBtn" onclick="toggleVoice()" title="Stimme an/aus">🔊</button>
-    <span class="nav-title">🔭 Such-Radar</span>
+    <span class="nav-title">🔭 Schatz-Radar</span>
     <button class="pill" onclick="reroll()" title="Neues Ziel">🎲</button>
   </div>
   <div class="gps-note" id="gpsNote">GPS sucht …</div>
@@ -608,7 +679,7 @@
 <section id="buch" class="view">
   <div class="buch-head">
     <button class="pill" onclick="closeBuch()">‹ Zurück</button>
-    <h2>📖 Sammelbuch</h2>
+    <h2>📖 Mein Waldbuch</h2>
     <span style="width:74px"></span>
   </div>
   <p class="buch-sub" id="buchSub">0 von 10 Arten gefunden</p>
@@ -694,7 +765,7 @@
 <section id="eltern" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:440px">
     <button class="pill" onclick="show('home')">‹ Zurück</button>
-    <h2>🛠️ Eltern-Ecke</h2>
+    <h2>🛠️ Für Erwachsene</h2>
     <span style="width:74px"></span>
   </div>
   <div class="eltern-card">
@@ -761,7 +832,7 @@
 <section id="avatar" class="view">
   <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:720px">
     <button class="pill" onclick="closeAvatar()">‹ Zurück</button>
-    <h2 style="font-size:23px;font-weight:800">🎨 Mein Schlumpf</h2>
+    <h2 style="font-size:23px;font-weight:800">🎨 Anzieh-Ecke</h2>
     <span style="width:74px"></span>
   </div>
   <div class="avatar-body">
@@ -830,6 +901,29 @@
     <div class="stars" id="imStars">★</div>
     <p id="imFact">–</p>
     <div class="modal-btns"><button class="mb-close" onclick="$('infoModal').classList.remove('open')">Schließen</button></div>
+  </div>
+</div>
+
+<!-- Wizard / Tutorial -->
+<div class="modal wiz" id="wizard">
+  <div class="wiz-card">
+    <div class="avatarfig" id="wizAvatar" style="width:150px"></div>
+    <div class="bubble wiz-bubble" id="wizText">Hallo!</div>
+    <div class="wiz-dots" id="wizDots"></div>
+    <div class="wiz-btns">
+      <button class="mb-close" onclick="wizSkip()">Überspringen</button>
+      <button class="mb-go" id="wizNext" onclick="wizStep()">Weiter ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- Querformat-Hinweis -->
+<div class="rotate-hint" id="rotateHint">
+  <div class="rotate-card">
+    <div class="rotate-phone">📱</div>
+    <div style="font-size:19px;font-weight:800">Dreh dein Handy!</div>
+    <div style="font-size:14.5px;font-weight:700;color:#7286a0;margin-top:4px">Im Querformat siehst du alles viel besser.</div>
+    <button class="pill" style="margin-top:12px" onclick="dismissRotate()">Trotzdem weiter</button>
   </div>
 </div>
 

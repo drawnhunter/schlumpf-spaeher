@@ -54,3 +54,17 @@ Append-only Index der Prüfkriterien-Versionen. Jeder Lauf wird unter `runs/` pr
   dokumentiert; v4-Test schlägt entsprechend nur in dieser einen Zeile fehl).
 - Behobene Bugs in diesem Release: navMascot-Klassenlöschung (Wrapper), #start
   safe-center, screen=home-Zweig, Thermo in Queransicht, Home-Scrollen.
+
+## v7 (2026-09-28, ~14:15)
+- Datei: `v7/criteria.md`, Tests: `v7/test_game_v7.mjs`, `v7/check_v7.mjs`
+- Anlass: Recherche-Paket (Charakter-System, Kids-UI, Figuren+Recht) + Nutzerwünsche.
+- Neu: **Wichtel-Wacht** (14 eigene Waldgnome als Radar-Funde, `gnome`-Flag; Katalog
+  20→**34**; Insel-Bewohner = alle Gnome), **Wizard/Tutorial** (6 Schritte, Avatar +
+  Sprechblase), **Standalone** (Rotate-Overlay, Install-Button, Fullscreen),
+  **Erzähler-Stimme** (pitch 1.08, rate 0.92, Stimmwahl), **Design-Pass** (Knautsch-
+  Buttons, Pop-Easing, Wiggle, Bounce-In, Plopp/Ding/Stempel-Sounds, Kindnamen
+  Schatz-Radar/Mein Waldbuch/Anzieh-Ecke/Für Erwachsene), **Avatar-Quick-Wins**
+  (Bodenschatten, Kinn-AO, Atem-Animation).
+- Überholte Erwartungen: v4 „14 Items" und v6 „20 Items" → jetzt **34** (dokumentiert).
+- Geplant als eigene Runde (nicht v7): Asset-Rework nach Art-Bibel (Master-Bild,
+  vorkompositierte Kopf-/Outfit-Sets) gemäß Charakter-Bericht.

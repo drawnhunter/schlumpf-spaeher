@@ -13,7 +13,8 @@ GPS-Schnitzeljagd-App für kleine Kinder (ab ~4): Schlümpfe im Wald verstecken 
 ## Tech-Stack
 - **Frontend:** Reine Statik — `index.html`, `app.js` (UI/Elternbereich), `game.js` (Spiel-Engine), `jsQR.js` (lokal, kein CDN). Offline-first, Zustand in localStorage, Sounds im App-Root (`*.mp3`), Grafiken in `assets/` (Avatar-Teile in `assets/av/`).
 - **PWA (seit v6):** `manifest.webmanifest` (landscape, standalone), `sw.js` (Precache Kern + Runtime-Cache, `/api` immer ans Netz), Icons in `assets/icons/`. Schrift: Baloo 2 (OFL) lokal in `assets/fonts/`.
-- **v6-Features:** Onboarding (Gast/Konto, optionale E-Mail), Avatar-Baukasten (6 Slots, kalibrierte Anker in `app.js` AVATAR_ANCHORS), Schlumpfinsel (6×4 Felder, Bewohner wandern), 20 Sammelobjekte (6 neue Radar-Funde + 4 QR-Editionen), Schwierigkeit als Dropdown, Querformat-Redesign.
+- **v7-Features (28.09.):** Wichtel-Wacht — 14 eigene Waldgnome als Radar-Funde (`gnome`-Flag, Katalog 34 Items, Insel-Bewohner zählt alle Gnome), Wizard/Tutorial (6 Schritte), Standalone (Rotate-Overlay, Install-Button, Fullscreen), Erzähler-Stimme (pitch 1.08/rate 0.92), Design-Pass (Knautsch-Buttons, Pop-Easing, neue Sounds ding/plopp/stempel), Kindernamen (Schatz-Radar, Mein Waldbuch, Anzieh-Ecke, Für Erwachsene), Avatar-Quick-Wins (Bodenschatten, Kinn-AO, Atem-Animation).
+- **v7-Features:** Onboarding (Gast/Konto, optionale E-Mail), Avatar-Baukasten (6 Slots, kalibrierte Anker in `app.js` AVATAR_ANCHORS), Schlumpfinsel (6×4 Felder, Bewohner wandern), 20 Sammelobjekte (6 neue Radar-Funde + 4 QR-Editionen), Schwierigkeit als Dropdown, Querformat-Redesign.
 - **Backend:** Node/Express + better-sqlite3 in `app/server/` (API unter `/api/*`: register/login/state/logout, Token-Auth). Dient dem Cloud-Sync der Sammlung.
 - **Verifikation:** `app/verifier/` enthält Kriterien-Cataloge und Testskripte (node) je Version — dort nach Änderungen immer gegenprüfen.
 

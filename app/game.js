@@ -153,7 +153,7 @@
   /* rarity: 1 häufig (60 %), 2 selten (28 %), 3 legendär (12 %)
      qrOnly: nur per QR-Code-Scan fangbar (Druck-Editionen) */
   const ITEMS = [
-    { id: 'schlumpf',    name: 'Waldschlumpf',       img: 'assets/schlumpf.png',    rarity: 3, dodges: 2, fact: 'Ein echter Waldschlumpf! Er war den ganzen Tag unterwegs.' },
+    { id: 'schlumpf',    name: 'Waldschlumpf',       img: 'assets/schlumpf.png',    rarity: 3, gnome: true, dodges: 2, fact: 'Ein echter Waldschlumpf! Er war den ganzen Tag unterwegs.' },
     { id: 'sternenstab', name: 'Sternenstab',        img: 'assets/sternenstab.png', rarity: 3, dodges: 2, fact: 'Damit zaubern Schlümpfe Glitzerregen. Vorsicht, kitzelt!' },
     { id: 'schlumpfhaus',name: 'Schlumpfhaus',       img: 'assets/schlumpfhaus.png',rarity: 2, dodges: 1, fact: 'Ein Pilzhaus zum Mitnehmen — da wohnt bestimmt gleich einer ein.' },
     { id: 'glitzerpilz', name: 'Glitzerpilz',        img: 'assets/glitzerpilz.png', rarity: 2, dodges: 1, fact: 'Leuchtet nachts golden. Schlümpfe benutzen ihn als Laterne.' },
@@ -164,9 +164,9 @@
     { id: 'falle',       name: 'Kuchen-Falle',       img: 'assets/falle.png',       rarity: 1, dodges: 0, fact: 'Leer — der Köder ist weg. Wer war wohl drin?' },
     { id: 'kuchen',      name: 'Schlumpf-Kuchen',    img: 'assets/kuchen.png',      rarity: 1, dodges: 0, fact: 'Erdbeer-Schichtkuchen. Das Lieblingsessen aller Waldschlümpfe.' },
     /* Druck-Editionen (nur per QR-Scan) */
-    { id: 'osterschlumpf',    name: 'Oster-Schlumpf',     img: 'assets/osterschlumpf.png',    rarity: 3, qrOnly: true, fact: 'Hat sich als Hase verkleidet. Fast hätten wir ihn übersehen!' },
+    { id: 'osterschlumpf',    name: 'Oster-Schlumpf',     img: 'assets/osterschlumpf.png',    rarity: 3, gnome: true, qrOnly: true, fact: 'Hat sich als Hase verkleidet. Fast hätten wir ihn übersehen!' },
     { id: 'osterei',          name: 'Goldenes Osterei',   img: 'assets/osterei.png',          rarity: 3, qrOnly: true, fact: 'Glänzt so sehr, dass Vögel neidisch werden.' },
-    { id: 'halloweenschlumpf',name: 'Halloween-Schlumpf', img: 'assets/halloweenschlumpf.png',rarity: 3, qrOnly: true, fact: 'Sein Kürbis leuchtet — aber er macht nur lustige Gesichter damit.' },
+    { id: 'halloweenschlumpf',name: 'Halloween-Schlumpf', img: 'assets/halloweenschlumpf.png',rarity: 3, gnome: true, qrOnly: true, fact: 'Sein Kürbis leuchtet — aber er macht nur lustige Gesichter damit.' },
     { id: 'kuerbis',          name: 'Leucht-Kürbis',      img: 'assets/kuerbis.png',          rarity: 3, qrOnly: true, fact: 'Wärmt im Herbst die kleinen Schlumpf-Füße.' },
     /* v6: Erweiterung (Radar-Pool) */
     { id: 'amulett',   name: 'Eichel-Amulett',  img: 'assets/amulett.png',   rarity: 2, dodges: 1, fact: 'Wer es trägt, findet immer den Heimweg.' },
@@ -175,6 +175,21 @@
     { id: 'beeren',    name: 'Beerenkorb',      img: 'assets/beeren.png',    rarity: 1, dodges: 0, fact: 'Rote Waldbeeren — weg damit, bevor die Vögel kommen!' },
     { id: 'moos',      name: 'Mooskissen',      img: 'assets/moos.png',      rarity: 1, dodges: 0, fact: 'So weich, dass man sofort müde wird.' },
     { id: 'kastanie',  name: 'Kastanien-Kerl',  img: 'assets/kastanie.png',  rarity: 1, dodges: 0, fact: 'Glänzt wie frisch poliert und grinst den ganzen Tag.' },
+    /* v7: Die Wichtel-Wacht — 14 sammelbare Waldgnome (eigene Figuren, distinct von Peyo) */
+    { id: 'pfitz',        name: 'Pfitz Pfifferling',   img: 'assets/wichtel_pfitz.png',        rarity: 1, gnome: true, dodges: 0, fact: 'Sammelt Pfifferlinge und pfeift dabei schief — die Pilze wachsen angeblich nur deshalb so gut.' },
+    { id: 'moosmichel',   name: 'Moosmichel',          img: 'assets/wichtel_moosmichel.png',   rarity: 1, gnome: true, dodges: 0, fact: 'Der langsamste Gnom des Waldes; sein Moosbett trägt er immer gleich mit.' },
+    { id: 'beerenbaldur', name: 'Beerenbaldur',        img: 'assets/wichtel_beerenbaldur.png', rarity: 1, gnome: true, dodges: 0, fact: 'Kennt jede Beere im Wald — und hat trotzdem immer eine rote Nase vom Naschen.' },
+    { id: 'zilli',        name: 'Zapfen-Zilli',        img: 'assets/wichtel_zilli.png',        rarity: 1, gnome: true, dodges: 0, fact: 'Wirft Tannenzapfen weiter als jeder andere — niemand weiß, wie sie das schafft.' },
+    { id: 'flitzi',       name: 'Flitzi Fliegenpilz',  img: 'assets/wichtel_flitzi.png',       rarity: 1, gnome: true, dodges: 0, fact: 'Wohnt unter dem größten Fliegenpilz des Waldes und poliert ihren Hut jeden Morgen.' },
+    { id: 'borste',       name: 'Borste Brammenbart',  img: 'assets/wichtel_borste.png',       rarity: 1, gnome: true, dodges: 0, fact: 'Sein Backenbart ist so stachelig, dass Vögel ihn gern als Nistmaterial-Lager besuchen.' },
+    { id: 'glimmer',      name: 'Glimmer-Grit',        img: 'assets/wichtel_glimmer.png',      rarity: 2, gnome: true, dodges: 1, fact: 'Ihre Laterne leuchtet mit echten Glüh-Pilzen; nachts findet mit ihr jeder den Heimweg.' },
+    { id: 'honig',        name: 'Honig-Hedwig',        img: 'assets/wichtel_honig.png',        rarity: 2, gnome: true, dodges: 1, fact: 'Beste Freundin aller Bienen; trägt zur Sicherheit immer einen Strohhut mit Schleier.' },
+    { id: 'porling',      name: 'Professor Porling',   img: 'assets/wichtel_porling.png',      rarity: 2, gnome: true, dodges: 1, fact: 'Hat 312 Pilzarten katalogisiert — und verwechselt trotzdem regelmäßig Salz mit Zucker.' },
+    { id: 'nebel',        name: 'Nebel-Norbert',       img: 'assets/wichtel_nebel.png',        rarity: 2, gnome: true, dodges: 1, fact: 'Erscheint nur bei Morgennebel; manche behaupten, er sei selbst aus Nebel gemacht.' },
+    { id: 'wanda',        name: 'Wurzel-Wanda',        img: 'assets/wichtel_wanda.png',        rarity: 2, gnome: true, dodges: 1, fact: 'Kann mit Baumwurzeln sprechen — sie flüstern ihr die besten Verstecke zu.' },
+    { id: 'sylvio',       name: 'Sternen-Sylvio',      img: 'assets/wichtel_sylvio.png',       rarity: 3, gnome: true, dodges: 2, fact: 'Fängt Sternschnuppen in seinem Glas und verschenkt das Licht an gute Träume.' },
+    { id: 'ronja',        name: 'Regenbogen-Ronja',    img: 'assets/wichtel_ronja.png',        rarity: 3, gnome: true, dodges: 2, fact: 'Zeigt sich nur nach Sommergewittern; wo sie lacht, wachsen bunte Beeren.' },
+    { id: 'gustav',       name: 'Goldtäubling Gustav', img: 'assets/wichtel_gustav.png',       rarity: 3, gnome: true, dodges: 2, fact: 'Der älteste Gnom des Waldes; sein goldener Täublingshut ist angeblich 300 Jahre alt.' },
   ];
   const RARITY_WEIGHT = { 1: 60, 2: 28, 3: 12 };
 
@@ -321,9 +336,10 @@
     delete tiles[idx];
     return { tiles };
   }
-  /* Waldschlümpfe + Editions-Schlümpfe ziehen ein (max. 5 sichtbar) */
+  /* Alle gefangenen Gnome ziehen ein (max. 5 sichtbar) */
   function islandInhabitants(coll) {
-    const n = (coll.schlumpf || 0) + (coll.osterschlumpf || 0) + (coll.halloweenschlumpf || 0);
+    let n = 0;
+    for (const it of ITEMS) if (it.gnome) n += (coll[it.id] || 0);
     return Math.min(5, n);
   }
 
